@@ -4,9 +4,11 @@ import * as Assets from '../assets';
 export default class Boot extends Phaser.State {
     public preload(): void {
         // Load any assets you need for your preloader state here.
+        this.game.load.spritesheet(Assets.Spritesheets.SpritesheetsLoadingSprite12809608.getName(), Assets.Spritesheets.SpritesheetsLoadingSprite12809608.getPNG(), Assets.Spritesheets.SpritesheetsLoadingSprite12809608.getFrameWidth(), Assets.Spritesheets.SpritesheetsLoadingSprite12809608.getFrameHeight());
         this.game.load.atlasJSONArray(Assets.Atlases.AtlasesPreloadSpritesArray.getName(), Assets.Atlases.AtlasesPreloadSpritesArray.getPNG(), Assets.Atlases.AtlasesPreloadSpritesArray.getJSONArray());
         // this.game.load.atlasJSONHash(Assets.Atlases.AtlasesPreloadSpritesHash.getName(), Assets.Atlases.AtlasesPreloadSpritesHash.getPNG(), Assets.Atlases.AtlasesPreloadSpritesHash.getJSONHash());
         // this.game.load.atlasXML(Assets.Atlases.AtlasesPreloadSpritesXml.getName(), Assets.Atlases.AtlasesPreloadSpritesXml.getPNG(), Assets.Atlases.AtlasesPreloadSpritesXml.getXML());
+        this.game.stage.backgroundColor = '#39d62d';
     }
 
     public create(): void {
@@ -14,6 +16,7 @@ export default class Boot extends Phaser.State {
 
         // Uncomment the following to disable multitouch
         // this.input.maxPointers = 1;
+
 
         this.game.scale.scaleMode = Phaser.ScaleManager[SCALE_MODE];
 
@@ -25,6 +28,7 @@ export default class Boot extends Phaser.State {
 
         this.game.scale.pageAlignHorizontally = true;
         this.game.scale.pageAlignVertically = true;
+        this.game.scale.refresh();
 
         if (this.game.device.desktop) {
             // Any desktop specific stuff here

@@ -2,28 +2,37 @@ import * as Assets from '../assets';
 import * as AssetUtils from '../utils/assetUtils';
 
 export default class Preloader extends Phaser.State {
-    private preloadBarSprite: Phaser.Sprite = null;
-    private preloadFrameSprite: Phaser.Sprite = null;
+    private loadingAnimation: Phaser.Animation = null;
 
     public preload(): void {
-        this.preloadBarSprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, Assets.Atlases.AtlasesPreloadSpritesArray.getName(), Assets.Atlases.AtlasesPreloadSpritesArray.Frames.PreloadBar);
-        // this.preloadBarSprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, Assets.Atlases.AtlasesPreloadSpritesHash.getName(), Assets.Atlases.AtlasesPreloadSpritesHash.Frames.PreloadBar);
-        // this.preloadBarSprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, Assets.Atlases.AtlasesPreloadSpritesXml.getName(), Assets.Atlases.AtlasesPreloadSpritesXml.Frames.PreloadBar);
-        this.preloadBarSprite.anchor.setTo(0, 0.5);
-        this.preloadBarSprite.x -= this.preloadBarSprite.width * 0.5;
+        const loadingSprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, Assets.Spritesheets.SpritesheetsLoadingSprite12809608.getName());
+        loadingSprite.anchor.setTo(0.5);
 
-        this.preloadFrameSprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, Assets.Atlases.AtlasesPreloadSpritesArray.getName(), Assets.Atlases.AtlasesPreloadSpritesArray.Frames.PreloadFrame);
-        // this.preloadFrameSprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, Assets.Atlases.AtlasesPreloadSpritesHash.getName(), Assets.Atlases.AtlasesPreloadSpritesHash.Frames.PreloadFrame);
-        // this.preloadFrameSprite = this.game.add.sprite(this.game.world.centerX, this.game.world.centerY, Assets.Atlases.AtlasesPreloadSpritesXml.getName(), Assets.Atlases.AtlasesPreloadSpritesXml.Frames.PreloadFrame);
-        this.preloadFrameSprite.anchor.setTo(0.5);
+        this.loadingAnimation = loadingSprite.animations.add('load', null, 6, false).play();
 
-        this.game.load.setPreloadSprite(this.preloadBarSprite);
-
+        // add game assets
+        // this.game.load.image(Assets.Images.ImagesBgGame.getName(), Assets.Images.ImagesBgGame.getPNG());
+        // this.game.load.image(Assets.Images.ImagesBgCones.getName(), Assets.Images.ImagesBgCones.getPNG());
+        this.game.load.physics(Assets.JSON.JsonSourcemachine.getName(), Assets.JSON.JsonSourcemachine.getJSON());
+        this.game.load.spritesheet(Assets.Spritesheets.SpritesheetsMonster22530012.getName(), Assets.Spritesheets.SpritesheetsMonster22530012.getPNG(), Assets.Spritesheets.SpritesheetsMonster22530012.getFrameWidth(), Assets.Spritesheets.SpritesheetsMonster22530012.getFrameHeight(), 10);
         AssetUtils.Loader.loadAllAssets(this.game, this.waitForSoundDecoding, this);
     }
 
+    private loadingAnimationComplete(): Phaser.Signal {
+        const signal = new Phaser.Signal();
+        signal.addOnce(() => this.startGame());
+        return signal;
+    }
+
     private waitForSoundDecoding(): void {
-        AssetUtils.Loader.waitForSoundDecoding(this.startGame, this);
+        AssetUtils.Loader.waitForSoundDecoding(this.soundDecoded, this);
+    }
+
+    private soundDecoded(): void {
+        if (!this.loadingAnimation.isFinished)
+            this.loadingAnimation.onComplete = this.loadingAnimationComplete();
+        else
+            this.startGame();
     }
 
     private startGame(): void {

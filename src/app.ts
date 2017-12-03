@@ -7,24 +7,26 @@ import * as WebFontLoader from 'webfontloader';
 import Boot from './states/boot';
 import Preloader from './states/preloader';
 import Title from './states/title';
+import Game from './states/game';
 import * as Utils from './utils/utils';
 import * as Assets from './assets';
 
 class App extends Phaser.Game {
     constructor(config: Phaser.IGameConfig) {
-        super (config);
+        super(config);
 
         this.state.add('boot', Boot);
         this.state.add('preloader', Preloader);
         this.state.add('title', Title);
+        this.state.add('game', Game);
 
         this.state.start('boot');
     }
 }
 
 function startApp(): void {
-    let gameWidth: number = DEFAULT_GAME_WIDTH;
-    let gameHeight: number = DEFAULT_GAME_HEIGHT;
+    let gameWidth: number = 1280; // DEFAULT_GAME_WIDTH;
+    let gameHeight: number = 960; // DEFAULT_GAME_HEIGHT;
 
     if (SCALE_MODE === 'USER_SCALE') {
         let screenMetrics: Utils.ScreenMetrics = Utils.ScreenUtils.calculateScreenMetrics(gameWidth, gameHeight);
@@ -46,6 +48,7 @@ function startApp(): void {
 }
 
 window.onload = () => {
+    document.body.style.background = '#39d62d';
     let webFontLoaderOptions: any = null;
     let webFontsToLoad: string[] = GOOGLE_WEB_FONTS;
 

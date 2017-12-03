@@ -6,9 +6,49 @@ export namespace Images {
 
         static getPNG(): string { return require('assets/images/background_template.png'); }
     }
+    export class ImagesBgCones {
+        static getName(): string { return 'bg-cones'; }
+
+        static getPNG(): string { return require('assets/images/bg-cones.png'); }
+    }
+    export class ImagesBgGame {
+        static getName(): string { return 'bg-game'; }
+
+        static getPNG(): string { return require('assets/images/bg-game.png'); }
+    }
+    export class ImagesConveybelt {
+        static getName(): string { return 'conveybelt'; }
+
+        static getPNG(): string { return require('assets/images/conveybelt.png'); }
+    }
+    export class ImagesSourcemachine {
+        static getName(): string { return 'sourcemachine'; }
+
+        static getPNG(): string { return require('assets/images/sourcemachine.png'); }
+    }
+    export class ImagesTastemachine {
+        static getName(): string { return 'tastemachine'; }
+
+        static getPNG(): string { return require('assets/images/tastemachine.png'); }
+    }
+    export class SpritesheetsMonster {
+        static getName(): string { return 'monster'; }
+
+        static getPNG(): string { return require('assets/spritesheets/monster.png'); }
+    }
 }
 
 export namespace Spritesheets {
+    export class SpritesheetsLoadingSprite12809608 {
+        static getName(): string { return 'loading-sprite.[1280,960,8,0,0]'; }
+
+        static getPNG(): string { return require('assets/spritesheets/loading-sprite.[1280,960,8,0,0].png'); }
+        static getFrameWidth(): number { return 1280; }
+        static getFrameHeight(): number { return 960; }
+        static getFrameMax(): number { return 8; }
+        static getMargin(): number { return 0; }
+        static getSpacing(): number { return 0; }
+    }
     export class SpritesheetsMetalslugMummy374518 {
         static getName(): string { return 'metalslug_mummy.[37,45,18,0,0]'; }
 
@@ -16,6 +56,16 @@ export namespace Spritesheets {
         static getFrameWidth(): number { return 37; }
         static getFrameHeight(): number { return 45; }
         static getFrameMax(): number { return 18; }
+        static getMargin(): number { return 0; }
+        static getSpacing(): number { return 0; }
+    }
+    export class SpritesheetsMonster22530012 {
+        static getName(): string { return 'monster.[225,300,12,0,0]'; }
+
+        static getPNG(): string { return require('assets/spritesheets/monster.[225,300,12,0,0].png'); }
+        static getFrameWidth(): number { return 225; }
+        static getFrameHeight(): number { return 300; }
+        static getFrameMax(): number { return 12; }
         static getMargin(): number { return 0; }
         static getSpacing(): number { return 0; }
     }
@@ -133,7 +183,11 @@ export namespace BitmapFonts {
 }
 
 export namespace JSON {
-    class IExistSoTypeScriptWillNotComplainAboutAnEmptyNamespace {}
+    export class JsonSourcemachine {
+        static getName(): string { return 'sourcemachine'; }
+
+        static getJSON(): string { return require('assets/json/sourcemachine.json'); }
+    }
 }
 
 export namespace XML {
