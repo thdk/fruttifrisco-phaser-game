@@ -21,10 +21,25 @@ export namespace Images {
 
         static getPNG(): string { return require('assets/images/conveybelt.png'); }
     }
+    export class ImagesProductionBgInclPlatforms {
+        static getName(): string { return 'production-bg-incl-platforms'; }
+
+        static getPNG(): string { return require('assets/images/production-bg-incl-platforms.png'); }
+    }
+    export class ImagesSourcemachineFront {
+        static getName(): string { return 'sourcemachine-front'; }
+
+        static getPNG(): string { return require('assets/images/sourcemachine-front.png'); }
+    }
     export class ImagesSourcemachine {
         static getName(): string { return 'sourcemachine'; }
 
         static getPNG(): string { return require('assets/images/sourcemachine.png'); }
+    }
+    export class ImagesTastemachineFront {
+        static getName(): string { return 'tastemachine-front'; }
+
+        static getPNG(): string { return require('assets/images/tastemachine-front.png'); }
     }
     export class ImagesTastemachine {
         static getName(): string { return 'tastemachine'; }
@@ -66,6 +81,26 @@ export namespace Spritesheets {
         static getFrameWidth(): number { return 225; }
         static getFrameHeight(): number { return 300; }
         static getFrameMax(): number { return 12; }
+        static getMargin(): number { return 0; }
+        static getSpacing(): number { return 0; }
+    }
+    export class SpritesheetsSpraycan12227512 {
+        static getName(): string { return 'spraycan.[122,275,12,0,0]'; }
+
+        static getPNG(): string { return require('assets/spritesheets/spraycan.[122,275,12,0,0].png'); }
+        static getFrameWidth(): number { return 122; }
+        static getFrameHeight(): number { return 275; }
+        static getFrameMax(): number { return 12; }
+        static getMargin(): number { return 0; }
+        static getSpacing(): number { return 0; }
+    }
+    export class SpritesheetsSpraycloud4583386 {
+        static getName(): string { return 'spraycloud.[458,338,6,0,0]'; }
+
+        static getPNG(): string { return require('assets/spritesheets/spraycloud.[458,338,6,0,0].png'); }
+        static getFrameWidth(): number { return 458; }
+        static getFrameHeight(): number { return 338; }
+        static getFrameMax(): number { return 6; }
         static getMargin(): number { return 0; }
         static getSpacing(): number { return 0; }
     }

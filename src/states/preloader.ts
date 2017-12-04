@@ -29,10 +29,10 @@ export default class Preloader extends Phaser.State {
     }
 
     private soundDecoded(): void {
-        if (!this.loadingAnimation.isFinished)
-            this.loadingAnimation.onComplete = this.loadingAnimationComplete();
-        else
-            this.startGame();
+        // if (!this.loadingAnimation.isFinished)
+        //     this.loadingAnimation.onComplete = this.loadingAnimationComplete();
+        // else
+        this.startGame();
     }
 
     private startGame(): void {
@@ -41,6 +41,7 @@ export default class Preloader extends Phaser.State {
     }
 
     private loadTitle(): void {
-        this.game.state.start('title');
+        // this.game.state.start('title');
+        this.game.state.start('game');
     }
 }
