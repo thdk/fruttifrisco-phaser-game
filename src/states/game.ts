@@ -122,23 +122,22 @@ export default class Title extends Phaser.State {
         body.debug = false;
         body.motionState = Phaser.Physics.P2.Body.DYNAMIC;
         body.setCollisionGroup(this.monsterCollisionGroup);
-        body.collides([this.platformCollisionGroup], this.monsterDropped, this);
+        body.collides([this.platformCollisionGroup, this.monsterCollisionGroup], this.monsterDropped, this);
     }
 
     private monsterDropped(aObject1: any, aObject2: any, context: any) {
         // explode dron and remove missile - kill it, not destroy
         const random_boolean = Math.random() >= 0.5;
-        const body = (<Phaser.Sprite>aObject1.sprite).body;
-        if (random_boolean)
+        const body: Phaser.Physics.P2.Body = (<Phaser.Sprite>aObject1.sprite).body;       
+
+        if (random_boolean) {
             body.moveLeft(100);
-        else
+        }
+        else {
             body.moveRight(100);
+        }
 
         const b: Phaser.Physics.P2.Body = (<Phaser.Sprite>aObject1.sprite).body;
         // (<Phaser.Sprite> aObject2.sprite);
-    }
-
-    public update() {
-        // this.game.physics.arcade.collide(this.monsters, this.platforms);
     }
 }
