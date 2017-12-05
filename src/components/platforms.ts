@@ -1,45 +1,11 @@
 import * as Assets from '../assets';
+import { PhysicsP2Sprite } from '../base/extended';
 import { Physics } from 'phaser-ce';
-
-export interface ICollision {
-    setCollisionGroup(group: Physics.P2.CollisionGroup);
-    collides(group: Physics.P2.CollisionGroup | Physics.P2.CollisionGroup[], callback?: Function, callbackContext?: any);
-}
-
-export class PhysicsSprite extends Phaser.Sprite {
-    constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number, group?: Phaser.Group) {
-        super(game, x, y, key, frame);
-        this.physicsEnabled = true;
-        this.game.physics.p2.enable(this);
-        if (group)
-            group.add(this);
-        else
-            this.game.add.existing(this);
-    }
-}
-
-export class PhysicsP2Sprite extends PhysicsSprite implements ICollision {
-    public body: Physics.P2.Body;
-    protected material: Phaser.Physics.P2.Material;
-    constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number, group?: Phaser.Group) {
-        super(game, x, y, key, frame, group);
-        this.game.physics.p2.enable(this);
-    }
-
-    public setCollisionGroup(group: Physics.P2.CollisionGroup) {
-        this.body.setCollisionGroup(group);
-    }
-
-    public collides(group: Physics.P2.CollisionGroup | Physics.P2.CollisionGroup[], callback?: Function, callbackContext?: any) {
-        this.body.collides(group, callback, callbackContext);
-    }
-}
 
 export class Platform extends PhysicsP2Sprite {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, group?: Phaser.Group) {
         super(game, x, y, key, null, group);
         this.body.static = true;
-        this.body.debug = false;
     }
 }
 
@@ -91,7 +57,7 @@ export class TasteMachine extends Machine {
 export class SourceMachine extends Machine {
     constructor(game: Phaser.Game, x: number, y, group?: Phaser.Group) {
         super(game, x, y, Assets.Images.ImagesSourcemachineFront.getName(), group);
-        this.body.setRectangle(380, 60, 190, 20);
+        this.body.setRectangle(380, 60, 200, 20);
     }
 }
 

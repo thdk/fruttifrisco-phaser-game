@@ -1,5 +1,6 @@
 import * as Assets from '../assets';
 import * as Platforms from '../components/platforms';
+import { Monster, Spraycan } from '../components/elements';
 import { Physics } from 'phaser-ce';
 
 export default class Title extends Phaser.State {
@@ -22,7 +23,7 @@ export default class Title extends Phaser.State {
         //  Turn on impact events for the world, without this we get no collision callbacks
         // this.game.physics.p2.setImpactEvents(true);
 
-        this.game.physics.p2.restitution = 0;
+        this.game.physics.p2.restitution = 0.1;
         this.game.physics.p2.friction = 0;
 
         //  Create our collision groups.
@@ -31,7 +32,7 @@ export default class Title extends Phaser.State {
 
         //  This part is vital if you want the objects with their own collision groups to still collide with the world bounds
         //  (which we do) - what this does is adjust the bounds to use its own collision group.
-        // this.game.physics.p2.updateBoundsCollisionGroup();
+        this.game.physics.p2.updateBoundsCollisionGroup();
 
         this.monsterMaterial = new Physics.P2.Material('monsterMaterial');
 
@@ -47,37 +48,23 @@ export default class Title extends Phaser.State {
 
         this.frontPlatforms = this.game.add.group();
 
-        this.spraycan = this.game.add.sprite(480, 20, Assets.Spritesheets.SpritesheetsSpraycan12227512.getName());
-
-        this.spraycan.anchor.setTo(0);
-        this.spraycan.scale.setTo(0.5);
-        this.spraycan.inputEnabled = true;
+        this.spraycan = new Spraycan(this.game, 480, 20);
         this.spraycan.events.onInputDown.add(this.grabSpraycan, this);
-        this.spraycan.animations.add("spray", [2], 1, false);
-        this.spraycan.input.useHandCursor = true;
-
-
-        // const beltsCoos: number[][] = [[0, 750], [600, 750], [1200, 750]];
-        // beltsCoos.forEach((coor: number[]) => {
-        //     const belt = new Platforms.ConveyerBelt(this.game, coor[0], coor[1]);
-        //     belt.setContactMaterialWith(this.monsterMaterial);
-        //     belt.setCollisionGroup(this.platformCollisionGroup);
-        //     belt.collides(this.monsterCollisionGroup);
-        // });
 
         const ground = new Platforms.Ground(this.game, 800);
-        ground.setCollisionGroup(this.platformCollisionGroup);
-        ground.collides(this.monsterCollisionGroup);
+        ground.body.setCollisionGroup(this.platformCollisionGroup);
+        ground.body.collides(this.monsterCollisionGroup);
 
         const sourceMachine = new Platforms.SourceMachine(this.game, 57, 543, this.frontPlatforms);
         const tasteMachine = new Platforms.TasteMachine(this.game, 781, 543, this.frontPlatforms);
 
-        // this.game.physics.p2.enable(this.platforms, true);
-
         [tasteMachine, sourceMachine].forEach((machine: Platforms.Machine) => {
             machine.setContactMaterialWith(this.monsterMaterial);
-            machine.setCollisionGroup(this.platformCollisionGroup);
-            machine.collides(this.monsterCollisionGroup);
+            machine.body.setCollisionGroup(this.platformCollisionGroup);
+            machine.body.collides(this.monsterCollisionGroup);
+            machine.inputEnabled = true;
+            // set priorityId higher than the monster so you can't click monsters when they are 'inside' a machine
+            machine.input.priorityID = 3;
         }, this);
 
         this.startDropMonsters();
@@ -93,30 +80,17 @@ export default class Title extends Phaser.State {
 
     private bgClicked() {
         if (this.spraycanActive) {
-            this.spraycan.animations.play("spray");
+            this.spraycan.animations.play('spray');
         }
-        console.log("clicked");
     }
 
     private dropMonster() {
-        const monster = this.monsters.create(this.world.randomX, 0, Assets.Spritesheets.SpritesheetsMonster22530012.getName(), 10);
-        const monsterAnimation = monster.animations.add('live', null, 4, true);
-        monster.scale.setTo(0.3);
-        monsterAnimation.play();
-
+        const monster = new Monster(this.game, this.monsters);
         monster.inputEnabled = true;
         monster.input.priorityID = 2;
         monster.events.onInputDown.add(this.monsterClicked, this);
-
-        this.game.physics.p2.enable(monster);
-        const body: Phaser.Physics.P2.Body = monster.body;
-        body.fixedRotation = true;
-        const circle = body.setCircle(28);
-        circle.material = this.monsterMaterial;
-        body.debug = false;
-        body.motionState = Phaser.Physics.P2.Body.DYNAMIC;
-        body.setCollisionGroup(this.monsterCollisionGroup);
-        body.collides([this.platformCollisionGroup], this.monsterDropped, this);
+        monster.body.setCollisionGroup(this.monsterCollisionGroup);
+        monster.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup], this.monsterDropped, this);
     }
 
     private monsterClicked(sprite, pointer) {
@@ -124,20 +98,22 @@ export default class Title extends Phaser.State {
             sprite.kill();
     }
 
-    private monsterDropped(aObject1: any, aObject2: any, context: any) {
-        // explode dron and remove missile - kill it, not destroy
-        const random_boolean = Math.random() >= 0.5;
-        const body: Phaser.Physics.P2.Body = (<Phaser.Sprite>aObject1.sprite).body;
+    private monsterDropped(monster: Physics.P2.Body, aObject2: Physics.P2.Body, context: any) {
+        // only set speed if it has no speed yet (caused by earlier collision)
+        let moveLeft = false;
+        if (monster.velocity.x < 0)
+            moveLeft = true;
+        else if (monster.velocity.x > 0)
+            moveLeft = false;
+        else
+            moveLeft = Math.random() >= 0.5;
 
-        if (random_boolean) {
-            body.moveLeft(100);
+        if (moveLeft) {
+            monster.moveLeft(100);
         }
         else {
-            body.moveRight(100);
+            monster.moveRight(200);
         }
-
-        const b: Phaser.Physics.P2.Body = (<Phaser.Sprite>aObject1.sprite).body;
-        // (<Phaser.Sprite> aObject2.sprite);
     }
 
     private killSprayCloud(cloud: Phaser.Sprite) {
@@ -152,12 +128,12 @@ export default class Title extends Phaser.State {
 
             if (this.game.input.activePointer.leftButton.isDown) {
                 // use offset of half frame width to set cursor at middle of frame
-                // WARNING: spraycan is scaled at 0.5 so framewidth must be scaled first too (0.5*0.5 = 0.25)                
+                // WARNING: spraycan is scaled at 0.5 so framewidth must be scaled first too (0.5*0.5 = 0.25)
 
                 this.spraycan.frame = 1;
                 const sprayCloud = this.game.add.sprite(this.spraycan.x + 10, this.spraycan.y - 120, Assets.Spritesheets.SpritesheetsSpraycloud4583386.getName());
                 sprayCloud.scale.setTo(0.4);
-                const sprayAnimation = sprayCloud.animations.add("clouds", null, 9, false);
+                const sprayAnimation = sprayCloud.animations.add('clouds', null, 9, false);
                 sprayAnimation.play();
 
                 const signal = new Phaser.Signal();
@@ -171,7 +147,7 @@ export default class Title extends Phaser.State {
             if (this.game.input.activePointer.rightButton.isDown) {
                 this.spraycan.reset(480, 20);
                 this.spraycanActive = false;
-            }            
+            }
         }
     }
 }
