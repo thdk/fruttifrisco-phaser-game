@@ -44,13 +44,18 @@ export default class Title extends Phaser.State {
         // so the monster will appear behind the front panels!
         this.monsters = this.game.add.physicsGroup();
         this.monsters.physicsBodyType = Phaser.Physics.P2JS;
+
         this.frontPlatforms = this.game.add.group();
 
         this.spraycan = this.game.add.sprite(480, 20, Assets.Spritesheets.SpritesheetsSpraycan12227512.getName());
+
         this.spraycan.anchor.setTo(0);
         this.spraycan.scale.setTo(0.5);
         this.spraycan.inputEnabled = true;
         this.spraycan.events.onInputDown.add(this.grabSpraycan, this);
+        this.spraycan.animations.add("spray", [2], 1, false);
+        this.spraycan.input.useHandCursor = true;
+
 
         // const beltsCoos: number[][] = [[0, 750], [600, 750], [1200, 750]];
         // beltsCoos.forEach((coor: number[]) => {
@@ -64,8 +69,8 @@ export default class Title extends Phaser.State {
         ground.setCollisionGroup(this.platformCollisionGroup);
         ground.collides(this.monsterCollisionGroup);
 
-        const sourceMachine = new Platforms.SourceMachine(this.game, 57, 543);
-        const tasteMachine = new Platforms.TasteMachine(this.game, 781, 543);
+        const sourceMachine = new Platforms.SourceMachine(this.game, 57, 543, this.frontPlatforms);
+        const tasteMachine = new Platforms.TasteMachine(this.game, 781, 543, this.frontPlatforms);
 
         // this.game.physics.p2.enable(this.platforms, true);
 
@@ -86,11 +91,22 @@ export default class Title extends Phaser.State {
         this.spraycanActive = true;
     }
 
+    private bgClicked() {
+        if (this.spraycanActive) {
+            this.spraycan.animations.play("spray");
+        }
+        console.log("clicked");
+    }
+
     private dropMonster() {
         const monster = this.monsters.create(this.world.randomX, 0, Assets.Spritesheets.SpritesheetsMonster22530012.getName(), 10);
         const monsterAnimation = monster.animations.add('live', null, 4, true);
         monster.scale.setTo(0.3);
         monsterAnimation.play();
+
+        monster.inputEnabled = true;
+        monster.input.priorityID = 2;
+        monster.events.onInputDown.add(this.monsterClicked, this);
 
         this.game.physics.p2.enable(monster);
         const body: Phaser.Physics.P2.Body = monster.body;
@@ -101,6 +117,11 @@ export default class Title extends Phaser.State {
         body.motionState = Phaser.Physics.P2.Body.DYNAMIC;
         body.setCollisionGroup(this.monsterCollisionGroup);
         body.collides([this.platformCollisionGroup], this.monsterDropped, this);
+    }
+
+    private monsterClicked(sprite, pointer) {
+        if (this.spraycanActive)
+            sprite.kill();
     }
 
     private monsterDropped(aObject1: any, aObject2: any, context: any) {
@@ -119,10 +140,38 @@ export default class Title extends Phaser.State {
         // (<Phaser.Sprite> aObject2.sprite);
     }
 
+    private killSprayCloud(cloud: Phaser.Sprite) {
+        cloud.kill();
+    }
+
     public update() {
         if (this.spraycanActive) {
-            this.spraycan.x = this.game.input.mousePointer.x;
-            this.spraycan.y = this.game.input.mousePointer.y;
+            this.game.canvas.style.cursor = 'none';
+            this.spraycan.x = this.game.input.mousePointer.x - Assets.Spritesheets.SpritesheetsSpraycan12227512.getFrameWidth() / 4;
+            this.spraycan.y = this.game.input.mousePointer.y - 20;
+
+            if (this.game.input.activePointer.leftButton.isDown) {
+                // use offset of half frame width to set cursor at middle of frame
+                // WARNING: spraycan is scaled at 0.5 so framewidth must be scaled first too (0.5*0.5 = 0.25)                
+
+                this.spraycan.frame = 1;
+                const sprayCloud = this.game.add.sprite(this.spraycan.x + 10, this.spraycan.y - 120, Assets.Spritesheets.SpritesheetsSpraycloud4583386.getName());
+                sprayCloud.scale.setTo(0.4);
+                const sprayAnimation = sprayCloud.animations.add("clouds", null, 9, false);
+                sprayAnimation.play();
+
+                const signal = new Phaser.Signal();
+                signal.addOnce(() => this.killSprayCloud(sprayCloud));
+
+                sprayAnimation.onComplete = signal;
+            }
+            else
+                this.spraycan.frame = 0;
+
+            if (this.game.input.activePointer.rightButton.isDown) {
+                this.spraycan.reset(480, 20);
+                this.spraycanActive = false;
+            }            
         }
     }
 }

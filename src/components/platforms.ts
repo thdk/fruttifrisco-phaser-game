@@ -7,19 +7,22 @@ export interface ICollision {
 }
 
 export class PhysicsSprite extends Phaser.Sprite {
-    constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number) {
+    constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number, group?: Phaser.Group) {
         super(game, x, y, key, frame);
         this.physicsEnabled = true;
         this.game.physics.p2.enable(this);
-        this.game.add.existing(this);
+        if (group)
+            group.add(this);
+        else
+            this.game.add.existing(this);
     }
 }
 
 export class PhysicsP2Sprite extends PhysicsSprite implements ICollision {
     public body: Physics.P2.Body;
     protected material: Phaser.Physics.P2.Material;
-    constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number) {
-        super(game, x, y, key, frame);
+    constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number, group?: Phaser.Group) {
+        super(game, x, y, key, frame, group);
         this.game.physics.p2.enable(this);
     }
 
@@ -33,23 +36,23 @@ export class PhysicsP2Sprite extends PhysicsSprite implements ICollision {
 }
 
 export class Platform extends PhysicsP2Sprite {
-    constructor(game: Phaser.Game, x: number, y: number, key?: string) {
-        super(game, x, y, key);
+    constructor(game: Phaser.Game, x: number, y: number, key?: string, group?: Phaser.Group) {
+        super(game, x, y, key, null, group);
         this.body.static = true;
         this.body.debug = false;
     }
 }
 
 export class Ground extends Platform {
-    constructor(game: Phaser.Game, y: number, key?: string) {
-        super(game, 0, y, key);
+    constructor(game: Phaser.Game, y: number, key?: string, group?: Phaser.Group) {
+        super(game, 0, y, key, group);
         this.body.setRectangle(game.width, 200, game.width / 2);
     }
 }
 
 export class Machine extends Platform {
-    constructor(game: Phaser.Game, x: number, y: number, key?: string) {
-        super(game, x, y, key);
+    constructor(game: Phaser.Game, x: number, y: number, key?: string, group?: Phaser.Group) {
+        super(game, x, y, key, group);
         this.material = new Physics.P2.Material('machineMaterial');
         this.body.setMaterial(this.material);
         this.anchor.setTo(0);
@@ -79,15 +82,15 @@ export class Machine extends Platform {
 }
 
 export class TasteMachine extends Machine {
-    constructor(game: Phaser.Game, x: number, y) {
-        super(game, x, y, Assets.Images.ImagesTastemachineFront.getName());
+    constructor(game: Phaser.Game, x: number, y, group?: Phaser.Group) {
+        super(game, x, y, Assets.Images.ImagesTastemachineFront.getName(), group);
         this.body.setRectangle(270, 60, 136, 20);
     }
 }
 
 export class SourceMachine extends Machine {
-    constructor(game: Phaser.Game, x: number, y) {
-        super(game, x, y, Assets.Images.ImagesSourcemachineFront.getName());
+    constructor(game: Phaser.Game, x: number, y, group?: Phaser.Group) {
+        super(game, x, y, Assets.Images.ImagesSourcemachineFront.getName(), group);
         this.body.setRectangle(380, 60, 190, 20);
     }
 }
