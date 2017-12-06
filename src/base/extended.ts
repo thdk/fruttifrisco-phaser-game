@@ -24,6 +24,6 @@ export class PhysicsP2Sprite extends PhysicsSprite {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number, group?: Phaser.Group) {
         super(game, x, y, key, frame, group);
         this.game.physics.p2.enable(this);
-        this.body.debug = true;
+        this.body.debug = false;
     }
 }

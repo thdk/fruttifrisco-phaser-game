@@ -63,7 +63,7 @@ export default class Title extends Phaser.State {
     }
 
     private startDropMonsters() {
-        this.game.time.events.loop(1500, this.dropMonster, this);
+        this.game.time.events.loop(100, this.dropMonster, this);
     }
 
     private grabSpraycan() {
