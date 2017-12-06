@@ -2,11 +2,6 @@ import * as Assets from '../assets';
 import { PhysicsP2Sprite } from '../base/extended';
 import { Physics, Group } from 'phaser-ce';
 
-export enum MachineSize {
-    small = 1,
-    medium = 2,
-    large = 3
-}
 export class Platform extends PhysicsP2Sprite {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, group?: Phaser.Group) {
         super(game, x, y, key, null, group);
@@ -18,41 +13,6 @@ export class Ground extends Platform {
     constructor(game: Phaser.Game, y: number, key?: string, group?: Phaser.Group) {
         super(game, 0, y, key, group);
         this.body.setRectangle(game.width, 200, game.width / 2);
-    }
-}
-
-export class Machine extends Group {
-    constructor(game: Phaser.Game, x: number, y: number, size: MachineSize, parent?: Group, collisionGroup?: Physics.P2.CollisionGroup, collidesWith?: Physics.P2.CollisionGroup | Physics.P2.CollisionGroup[], name?: string, addToStage?: boolean, enableBody?: boolean, physicsBodyType?: number) {
-        super(game, parent, name, addToStage, enableBody, physicsBodyType);
-        this.x = x;
-        this.y = y;
-
-        if (parent)
-            parent.add(this);
-        else
-            game.add.existing(this);
-
-        const platform = this.createPlatform(size);
-        if (!platform)
-            return;
-
-        platform.inputEnabled = true;
-        platform.input.priorityID = 3
-        if (collisionGroup) {
-            platform.body.setCollisionGroup(collisionGroup);
-            platform.body.collides(collidesWith);
-        }
-    }
-
-    private createPlatform(size: MachineSize): MachinePlatform | null {
-        switch (size) {
-            case (MachineSize.small):
-                return new TasteMachinePlatform(this.game, this.x, this.y);
-            case (MachineSize.large):
-                return new SourceMachinePlatform(this.game, this.x, this.y);
-            default:
-                return null;
-        }
     }
 }
 

@@ -1,8 +1,7 @@
 import * as Assets from '../assets';
-import * as Platforms from '../components/platforms';
-import { Monster, Spraycan } from '../components/elements';
+import * as platforms from '../components/platforms';
+import { Monster, Spraycan, Machine, MachineSize } from '../components/elements';
 import { Physics } from 'phaser-ce';
-import { Machine, MachineSize } from '../components/platforms';
 
 export default class Title extends Phaser.State {
 
@@ -52,18 +51,18 @@ export default class Title extends Phaser.State {
         this.spraycan = new Spraycan(this.game, 480, 20);
         this.spraycan.events.onInputDown.add(this.grabSpraycan, this);
 
-        const ground = new Platforms.Ground(this.game, 800);
+        const ground = new platforms.Ground(this.game, 800);
         ground.body.setCollisionGroup(this.platformCollisionGroup);
         ground.body.collides(this.monsterCollisionGroup);
 
-        const sourceMachine = new Platforms.Machine(this.game, 57, 543, MachineSize.large, this.frontPlatforms, this.platformCollisionGroup, [this.monsterCollisionGroup]);
-        const tasteMachine = new Platforms.Machine(this.game, 781, 543, MachineSize.small, this.frontPlatforms, this.platformCollisionGroup, [this.monsterCollisionGroup]);
+        const sourceMachine = new Machine(this.game, 57, 543, MachineSize.large, this.frontPlatforms, this.platformCollisionGroup, [this.monsterCollisionGroup]);
+        const tasteMachine = new Machine(this.game, 781, 543, MachineSize.small, this.frontPlatforms, this.platformCollisionGroup, [this.monsterCollisionGroup]);
 
         this.startDropMonsters();
     }
 
     private startDropMonsters() {
-        this.game.time.events.loop(100, this.dropMonster, this);
+        this.game.time.events.loop(1500, this.dropMonster, this);
     }
 
     private grabSpraycan() {

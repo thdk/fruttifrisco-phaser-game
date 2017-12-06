@@ -84,6 +84,16 @@ export namespace Spritesheets {
         static getMargin(): number { return 0; }
         static getSpacing(): number { return 0; }
     }
+    export class SpritesheetsReceivers3004208 {
+        static getName(): string { return 'receivers.[300,420,8,0,0]'; }
+
+        static getPNG(): string { return require('assets/spritesheets/receivers.[300,420,8,0,0].png'); }
+        static getFrameWidth(): number { return 300; }
+        static getFrameHeight(): number { return 420; }
+        static getFrameMax(): number { return 8; }
+        static getMargin(): number { return 0; }
+        static getSpacing(): number { return 0; }
+    }
     export class SpritesheetsSpraycan12227512 {
         static getName(): string { return 'spraycan.[122,275,12,0,0]'; }
 
