@@ -1,7 +1,12 @@
 import * as Assets from '../assets';
 import { PhysicsP2Sprite } from '../base/extended';
-import { Physics } from 'phaser-ce';
+import { Physics, Group } from 'phaser-ce';
 
+export enum MachineSize {
+    small = 1,
+    medium = 2,
+    large = 3
+}
 export class Platform extends PhysicsP2Sprite {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, group?: Phaser.Group) {
         super(game, x, y, key, null, group);
@@ -16,7 +21,42 @@ export class Ground extends Platform {
     }
 }
 
-export class Machine extends Platform {
+export class Machine extends Group {
+    constructor(game: Phaser.Game, x: number, y: number, size: MachineSize, parent?: Group, collisionGroup?: Physics.P2.CollisionGroup, collidesWith?: Physics.P2.CollisionGroup | Physics.P2.CollisionGroup[], name?: string, addToStage?: boolean, enableBody?: boolean, physicsBodyType?: number) {
+        super(game, parent, name, addToStage, enableBody, physicsBodyType);
+        this.x = x;
+        this.y = y;
+
+        if (parent)
+            parent.add(this);
+        else
+            game.add.existing(this);
+
+        const platform = this.createPlatform(size);
+        if (!platform)
+            return;
+
+        platform.inputEnabled = true;
+        platform.input.priorityID = 3
+        if (collisionGroup) {
+            platform.body.setCollisionGroup(collisionGroup);
+            platform.body.collides(collidesWith);
+        }
+    }
+
+    private createPlatform(size: MachineSize): MachinePlatform | null {
+        switch (size) {
+            case (MachineSize.small):
+                return new TasteMachinePlatform(this.game, this.x, this.y);
+            case (MachineSize.large):
+                return new SourceMachinePlatform(this.game, this.x, this.y);
+            default:
+                return null;
+        }
+    }
+}
+
+export class MachinePlatform extends Platform {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, group?: Phaser.Group) {
         super(game, x, y, key, group);
         this.material = new Physics.P2.Material('machineMaterial');
@@ -47,14 +87,14 @@ export class Machine extends Platform {
     }
 }
 
-export class TasteMachine extends Machine {
+export class TasteMachinePlatform extends MachinePlatform {
     constructor(game: Phaser.Game, x: number, y, group?: Phaser.Group) {
         super(game, x, y, Assets.Images.ImagesTastemachineFront.getName(), group);
         this.body.setRectangle(270, 60, 136, 20);
     }
 }
 
-export class SourceMachine extends Machine {
+export class SourceMachinePlatform extends MachinePlatform {
     constructor(game: Phaser.Game, x: number, y, group?: Phaser.Group) {
         super(game, x, y, Assets.Images.ImagesSourcemachineFront.getName(), group);
         this.body.setRectangle(380, 60, 200, 20);

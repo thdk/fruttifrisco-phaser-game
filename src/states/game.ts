@@ -2,6 +2,7 @@ import * as Assets from '../assets';
 import * as Platforms from '../components/platforms';
 import { Monster, Spraycan } from '../components/elements';
 import { Physics } from 'phaser-ce';
+import { Machine, MachineSize } from '../components/platforms';
 
 export default class Title extends Phaser.State {
 
@@ -55,17 +56,8 @@ export default class Title extends Phaser.State {
         ground.body.setCollisionGroup(this.platformCollisionGroup);
         ground.body.collides(this.monsterCollisionGroup);
 
-        const sourceMachine = new Platforms.SourceMachine(this.game, 57, 543, this.frontPlatforms);
-        const tasteMachine = new Platforms.TasteMachine(this.game, 781, 543, this.frontPlatforms);
-
-        [tasteMachine, sourceMachine].forEach((machine: Platforms.Machine) => {
-            machine.setContactMaterialWith(this.monsterMaterial);
-            machine.body.setCollisionGroup(this.platformCollisionGroup);
-            machine.body.collides(this.monsterCollisionGroup);
-            machine.inputEnabled = true;
-            // set priorityId higher than the monster so you can't click monsters when they are 'inside' a machine
-            machine.input.priorityID = 3;
-        }, this);
+        const sourceMachine = new Platforms.Machine(this.game, 57, 543, MachineSize.large, this.frontPlatforms, this.platformCollisionGroup, [this.monsterCollisionGroup]);
+        const tasteMachine = new Platforms.Machine(this.game, 781, 543, MachineSize.small, this.frontPlatforms, this.platformCollisionGroup, [this.monsterCollisionGroup]);
 
         this.startDropMonsters();
     }
