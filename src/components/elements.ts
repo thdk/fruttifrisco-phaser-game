@@ -86,12 +86,18 @@ export class Rain extends PhysicsP2Sprite {
 }
 
 export class Monster extends Rain {
+    public hit: Phaser.Signal;
     constructor(game: Phaser.Game, group?: Phaser.Group) {
         super(game, Assets.Spritesheets.SpritesheetsMonster22530012, 10, group, 0.3);
         this.animations.add('live', null, 4, true).play();
 
         this.body.fixedRotation = true;
         const circle = this.body.setCircle(28).material = new Phaser.Physics.P2.Material('machineMaterial');
+        
+        this.inputEnabled = true;
+        this.input.enabled = false;
+        this.input.priorityID = 2;
+        this.events.onInputDown.add(this.kill, this);
     }
 }
 

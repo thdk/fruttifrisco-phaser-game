@@ -85,9 +85,9 @@ export namespace Spritesheets {
         static getSpacing(): number { return 0; }
     }
     export class SpritesheetsReceivers3004208 {
-        static getName(): string { return 'receivers.[300,420,8,0,0]'; }
+        static getName(): string { return 'Receivers.[300,420,8,0,0]'; }
 
-        static getPNG(): string { return require('assets/spritesheets/receivers.[300,420,8,0,0].png'); }
+        static getPNG(): string { return require('assets/spritesheets/Receivers.[300,420,8,0,0].png'); }
         static getFrameWidth(): number { return 300; }
         static getFrameHeight(): number { return 420; }
         static getFrameMax(): number { return 8; }

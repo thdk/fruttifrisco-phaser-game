@@ -66,27 +66,14 @@ export default class Title extends Phaser.State {
     }
 
     private grabSpraycan() {
+        this.monsters.setAllChildren('input.enabled', true);
         this.spraycanActive = true;
-    }
-
-    private bgClicked() {
-        if (this.spraycanActive) {
-            this.spraycan.animations.play('spray');
-        }
     }
 
     private dropMonster() {
         const monster = new Monster(this.game, this.monsters);
-        monster.inputEnabled = true;
-        monster.input.priorityID = 2;
-        monster.events.onInputDown.add(this.monsterClicked, this);
         monster.body.setCollisionGroup(this.monsterCollisionGroup);
         monster.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup], this.monsterDropped, this);
-    }
-
-    private monsterClicked(sprite, pointer) {
-        if (this.spraycanActive)
-            sprite.kill();
     }
 
     private monsterDropped(monster: Physics.P2.Body, aObject2: Physics.P2.Body, context: any) {
@@ -137,6 +124,7 @@ export default class Title extends Phaser.State {
 
             if (this.game.input.activePointer.rightButton.isDown) {
                 this.spraycan.reset(480, 20);
+                this.monsters.setAllChildren('input.enabled', false);
                 this.spraycanActive = false;
             }
         }
