@@ -12,6 +12,7 @@ export default class Title extends Phaser.State {
 
     private platformCollisionGroup: Phaser.Physics.P2.CollisionGroup;
     private monsterCollisionGroup: Phaser.Physics.P2.CollisionGroup;
+    private icecreamCollisionGroup: Phaser.Physics.P2.CollisionGroup;
     private monsterMaterial: Physics.P2.Material;
     private machineMaterial: Physics.P2.Material;
     private conveyorBeltMaterial: Physics.P2.Material;
@@ -29,6 +30,7 @@ export default class Title extends Phaser.State {
         //  Create our collision groups.
         this.platformCollisionGroup = this.game.physics.p2.createCollisionGroup();
         this.monsterCollisionGroup = this.game.physics.p2.createCollisionGroup();
+        this.icecreamCollisionGroup = this.game.physics.p2.createCollisionGroup();
 
         //  This part is vital if you want the objects with their own collision groups to still collide with the world bounds
         //  (which we do) - what this does is adjust the bounds to use its own collision group.
@@ -50,18 +52,21 @@ export default class Title extends Phaser.State {
         this.spraycan = new Spraycan(this.game, 480, 20);
         this.spraycan.events.onInputDown.add(this.grabSpraycan, this);
 
-        const ground = new platforms.Ground(this.game, 800);
+        const ground = new platforms.Ground(this.game, 820);
         ground.body.setCollisionGroup(this.platformCollisionGroup);
-        ground.body.collides(this.monsterCollisionGroup);
+        ground.body.collides([this.monsterCollisionGroup, this.icecreamCollisionGroup]);
 
         const sourceMachine = new Machine(this.game, 57, 543, MachineSize.large, this.frontPlatforms, this.platformCollisionGroup, [this.monsterCollisionGroup]);
         const tasteMachine = new Machine(this.game, 781, 543, MachineSize.small, this.frontPlatforms, this.platformCollisionGroup, [this.monsterCollisionGroup]);
 
         this.startDropMonsters();
+        this.startMakeIcecream();
     }
 
     private startMakeIcecream() {
-        const icecream = new IceCream(this.game, 0, 800, 0, this.icecreams);
+        const icecream = this.icecreams.add(new IceCream(this.game, 0, 620, 0));
+        icecream.body.setCollisionGroup(this.icecreamCollisionGroup);
+        icecream.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup]);
     }
 
     private startDropMonsters() {
@@ -74,9 +79,9 @@ export default class Title extends Phaser.State {
     }
 
     private dropMonster() {
-        const monster = new Monster(this.game, this.monsters);
+        const monster = this.monsters.add(new Monster(this.game));
         monster.body.setCollisionGroup(this.monsterCollisionGroup);
-        monster.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup], this.monsterDropped, this);
+        monster.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup, this.icecreamCollisionGroup], this.monsterDropped, this);
     }
 
     private monsterDropped(monster: Physics.P2.Body, aObject2: Physics.P2.Body, context: any) {

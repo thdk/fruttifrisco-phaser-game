@@ -12,19 +12,15 @@ export enum MachineSize {
 
 export class Machine extends Group {
     constructor(game: Phaser.Game, x: number, y: number, size: MachineSize, parent?: Group, collisionGroup?: Physics.P2.CollisionGroup, collidesWith?: Physics.P2.CollisionGroup | Physics.P2.CollisionGroup[], name?: string, addToStage?: boolean, enableBody?: boolean, physicsBodyType?: number) {
-        super(game, parent, name, addToStage, enableBody, physicsBodyType);
+        super(game, parent, name, true, enableBody, physicsBodyType);
         this.x = x;
         this.y = y;
 
-        if (parent)
-            parent.add(this);
-        else
-            game.add.existing(this);
-
-        const platform = this.createPlatform(size);
+        const platform = parent.add(this.createPlatform(size));
         if (!platform)
             return;
 
+        platform.anchor.setTo(0);
         platform.inputEnabled = true;
         platform.input.priorityID = 3;
         if (collisionGroup) {
@@ -50,7 +46,7 @@ export class Machine extends Group {
         if (size === 1) {
             const red = new RedReceiver(this.game, 75, 0, this);
         }
-        else{
+        else {
             const green = new GreenReceiver(this.game, 40, 0, this);
             const green1 = new GreenReceiver(this.game, 160, 0, this);
             const green2 = new GreenReceiver(this.game, 280, 0, this);
@@ -60,15 +56,13 @@ export class Machine extends Group {
 
 export class IceCream extends PhysicsP2Sprite {
     constructor(game: Phaser.Game, x: number, y: number, frame?: string | number, group?: Phaser.Group) {
-        super(game, x, y, Assets.Spritesheets.SpritesheetsIcecreams1692499.getName(), frame, group);
+        super(game, x, y, Assets.Spritesheets.SpritesheetsIcecreams1572066.getName(), frame, 0.5, 0);
     }
 }
 
 export class Receiver extends SimpleSprite {
     constructor(game: Phaser.Game, x: number, y: number, frame?: string | number, group?: Phaser.Group) {
-        super(game, x, y, Assets.Spritesheets.SpritesheetsReceivers3004208.getName(), frame, group);
-        this.scale.setTo(0.3);
-        this.anchor.set(0, 1);
+        super(game, x, y, Assets.Spritesheets.SpritesheetsReceivers3004208.getName(), frame, 0.3, new Phaser.Point(0, 1));
     }
 }
 
@@ -85,21 +79,20 @@ export class RedReceiver extends Receiver {
 }
 
 export class Rain extends PhysicsP2Sprite {
-    constructor(game: Phaser.Game, spritesheet: thdk.assets.ISpritesheet, frame?: any, group?: Phaser.Group, scale: number = 0) {
-        super(game, game.world.randomX, 0, Assets.Spritesheets.SpritesheetsMonster22530012.getName(), null, group);
-        this.scale.setTo(scale);
+    constructor(game: Phaser.Game, spritesheet: thdk.assets.ISpritesheet, frame?: any, scale: number = 1) {
+        super(game, game.world.randomX, 0, Assets.Spritesheets.SpritesheetsMonster22530012.getName(), frame, scale);
     }
 }
 
 export class Monster extends Rain {
     public hit: Phaser.Signal;
-    constructor(game: Phaser.Game, group?: Phaser.Group) {
-        super(game, Assets.Spritesheets.SpritesheetsMonster22530012, 10, group, 0.3);
+    constructor(game: Phaser.Game) {
+        super(game, Assets.Spritesheets.SpritesheetsMonster22530012, 10, 0.3);
         this.animations.add('live', null, 4, true).play();
 
         this.body.fixedRotation = true;
-        const circle = this.body.setCircle(28).material = new Phaser.Physics.P2.Material('machineMaterial');
-        
+        const circle = this.body.setCircle(30).material = new Phaser.Physics.P2.Material('monsterMaterial');
+
         this.inputEnabled = true;
         this.input.enabled = false;
         this.input.priorityID = 2;

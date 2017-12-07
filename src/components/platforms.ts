@@ -3,25 +3,24 @@ import { PhysicsP2Sprite } from '../base/extended';
 import { Physics, Group } from 'phaser-ce';
 
 export class Platform extends PhysicsP2Sprite {
-    constructor(game: Phaser.Game, x: number, y: number, key?: string, group?: Phaser.Group) {
-        super(game, x, y, key, null, group);
+    constructor(game: Phaser.Game, x: number, y: number, key?: string, scale?: number | Phaser.Point, anchor?: number | Phaser.Point) {
+        super(game, x, y, key, null, scale, anchor);
         this.body.static = true;
     }
 }
 
 export class Ground extends Platform {
-    constructor(game: Phaser.Game, y: number, key?: string, group?: Phaser.Group) {
-        super(game, 0, y, key, group);
+    constructor(game: Phaser.Game, y: number, key?: string) {
+        super(game, 0, y, key, 1);
         this.body.setRectangle(game.width, 200, game.width / 2);
     }
 }
 
 export class MachinePlatform extends Platform {
-    constructor(game: Phaser.Game, x: number, y: number, key?: string, group?: Phaser.Group) {
-        super(game, x, y, key, group);
+    constructor(game: Phaser.Game, x: number, y: number, key?: string) {
+        super(game, x, y, key, 1, 0);
         this.material = new Physics.P2.Material('machineMaterial');
         this.body.setMaterial(this.material);
-        this.anchor.setTo(0);
     }
 
     public setContactMaterialWith(otherMaterial: Phaser.Physics.P2.Material): Phaser.Physics.P2.ContactMaterial {
@@ -48,15 +47,15 @@ export class MachinePlatform extends Platform {
 }
 
 export class TasteMachinePlatform extends MachinePlatform {
-    constructor(game: Phaser.Game, x: number, y, group?: Phaser.Group) {
-        super(game, x, y, Assets.Images.ImagesTastemachineFront.getName(), group);
+    constructor(game: Phaser.Game, x: number, y) {
+        super(game, x, y, Assets.Images.ImagesTastemachineFront.getName());
         this.body.setRectangle(270, 60, 136, 20);
     }
 }
 
 export class SourceMachinePlatform extends MachinePlatform {
-    constructor(game: Phaser.Game, x: number, y, group?: Phaser.Group) {
-        super(game, x, y, Assets.Images.ImagesSourcemachineFront.getName(), group);
+    constructor(game: Phaser.Game, x: number, y) {
+        super(game, x, y, Assets.Images.ImagesSourcemachineFront.getName());
         this.body.setRectangle(380, 60, 200, 20);
     }
 }

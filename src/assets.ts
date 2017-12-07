@@ -54,10 +54,20 @@ export namespace Images {
 }
 
 export namespace Spritesheets {
-    export class SpritesheetsIcecreams1692499 {
-        static getName(): string { return 'icecreams.[169,249,9,0,0]'; }
+    export class SpritesheetsIcecreams1572066 {
+        static getName(): string { return 'icecreams.[157,206,6,0,0]'; }
 
-        static getPNG(): string { return require('assets/spritesheets/icecreams.[169,249,9,0,0].png'); }
+        static getPNG(): string { return require('assets/spritesheets/icecreams.[157,206,6,0,0].png'); }
+        static getFrameWidth(): number { return 157; }
+        static getFrameHeight(): number { return 206; }
+        static getFrameMax(): number { return 6; }
+        static getMargin(): number { return 0; }
+        static getSpacing(): number { return 0; }
+    }
+    export class SpritesheetsIcecreamsall1692499 {
+        static getName(): string { return 'icecreamsall.[169,249,9,0,0]'; }
+
+        static getPNG(): string { return require('assets/spritesheets/icecreamsall.[169,249,9,0,0].png'); }
         static getFrameWidth(): number { return 169; }
         static getFrameHeight(): number { return 249; }
         static getFrameMax(): number { return 9; }
