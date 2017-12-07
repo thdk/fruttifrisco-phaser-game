@@ -26,7 +26,7 @@ export class Machine extends Group {
             return;
 
         platform.inputEnabled = true;
-        platform.input.priorityID = 3
+        platform.input.priorityID = 3;
         if (collisionGroup) {
             platform.body.setCollisionGroup(collisionGroup);
             platform.body.collides(collidesWith);
@@ -55,6 +55,12 @@ export class Machine extends Group {
             const green1 = new GreenReceiver(this.game, 160, 0, this);
             const green2 = new GreenReceiver(this.game, 280, 0, this);
         }
+    }
+}
+
+export class IceCream extends PhysicsP2Sprite {
+    constructor(game: Phaser.Game, x: number, y: number, frame?: string | number, group?: Phaser.Group) {
+        super(game, x, y, Assets.Spritesheets.SpritesheetsIcecreams1692499.getName(), frame, group);
     }
 }
 

@@ -1,10 +1,10 @@
 import * as Assets from '../assets';
 import * as platforms from '../components/platforms';
-import { Monster, Spraycan, Machine, MachineSize } from '../components/elements';
+import { Monster, Spraycan, Machine, MachineSize, IceCream } from '../components/elements';
 import { Physics } from 'phaser-ce';
 
 export default class Title extends Phaser.State {
-
+    private icecreams: Phaser.Group;
     private monsters: Phaser.Group;
     private frontPlatforms: Phaser.Group;
     private spraycanActive = false;
@@ -41,11 +41,10 @@ export default class Title extends Phaser.State {
         const background = this.game.add.image(this.game.world.centerX, this.game.world.centerY, Assets.Images.ImagesProductionBgInclPlatforms.getName());
         background.anchor.setTo(0.5);
 
-        // the monsters group must be added to the game before the FRONT panels
-        // so the monster will appear behind the front panels!
+        this.icecreams = this.game.add.physicsGroup();
+        this.icecreams.physicsBodyType = Phaser.Physics.P2JS;
         this.monsters = this.game.add.physicsGroup();
         this.monsters.physicsBodyType = Phaser.Physics.P2JS;
-
         this.frontPlatforms = this.game.add.group();
 
         this.spraycan = new Spraycan(this.game, 480, 20);
@@ -61,8 +60,12 @@ export default class Title extends Phaser.State {
         this.startDropMonsters();
     }
 
+    private startMakeIcecream() {
+        const icecream = new IceCream(this.game, 0, 800, 0, this.icecreams);
+    }
+
     private startDropMonsters() {
-        this.game.time.events.loop(1500, this.dropMonster, this);
+        this.game.time.events.loop(5000, this.dropMonster, this);
     }
 
     private grabSpraycan() {
