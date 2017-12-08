@@ -56,8 +56,8 @@ export default class Title extends Phaser.State {
         ground.body.setCollisionGroup(this.platformCollisionGroup);
         ground.body.collides([this.monsterCollisionGroup, this.icecreamCollisionGroup]);
 
-        const sourceMachine = new Machine(this.game, 57, 543, MachineSize.large, this.frontPlatforms, this.platformCollisionGroup, [this.monsterCollisionGroup]);
-        const tasteMachine = new Machine(this.game, 781, 543, MachineSize.small, this.frontPlatforms, this.platformCollisionGroup, [this.monsterCollisionGroup]);
+        const sourceMachine = this.frontPlatforms.add(new Machine(this.game, 57, 543, MachineSize.large, this.platformCollisionGroup, [this.monsterCollisionGroup]));
+        const tasteMachine = this.frontPlatforms.add(new Machine(this.game, 781, 543, MachineSize.small, this.platformCollisionGroup, [this.monsterCollisionGroup]));
 
         this.startDropMonsters();
         this.startMakeIcecream();

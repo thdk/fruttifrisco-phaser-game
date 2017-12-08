@@ -11,16 +11,12 @@ export enum MachineSize {
 }
 
 export class Machine extends Group {
-    constructor(game: Phaser.Game, x: number, y: number, size: MachineSize, parent?: Group, collisionGroup?: Physics.P2.CollisionGroup, collidesWith?: Physics.P2.CollisionGroup | Physics.P2.CollisionGroup[], name?: string, addToStage?: boolean, enableBody?: boolean, physicsBodyType?: number) {
-        super(game, parent, name, true, enableBody, physicsBodyType);
-        this.x = x;
-        this.y = y;
-
-        const platform = parent.add(this.createPlatform(size));
+    constructor(game: Phaser.Game, x: number, y: number, size: MachineSize, collisionGroup?: Physics.P2.CollisionGroup, collidesWith?: Physics.P2.CollisionGroup | Physics.P2.CollisionGroup[], name?: string, addToStage?: boolean, enableBody?: boolean, physicsBodyType?: number) {
+        super(game, null, name, true, enableBody, physicsBodyType);
+        const platform = this.createPlatform(size, x, y);
         if (!platform)
             return;
 
-        platform.anchor.setTo(0);
         platform.inputEnabled = true;
         platform.input.priorityID = 3;
         if (collisionGroup) {
@@ -28,15 +24,17 @@ export class Machine extends Group {
             platform.body.collides(collidesWith);
         }
 
+        this.add(platform);
+
         this.createReceivers(size);
     }
 
-    private createPlatform(size: MachineSize): platforms.MachinePlatform | null {
+    private createPlatform(size: MachineSize, x: number, y:number): platforms.MachinePlatform | null {
         switch (size) {
             case (MachineSize.small):
-                return new platforms.TasteMachinePlatform(this.game, this.x, this.y);
+                return new platforms.TasteMachinePlatform(this.game, x, y);
             case (MachineSize.large):
-                return new platforms.SourceMachinePlatform(this.game, this.x, this.y);
+                return new platforms.SourceMachinePlatform(this.game, x, y);
             default:
                 return null;
         }
@@ -55,8 +53,8 @@ export class Machine extends Group {
 }
 
 export class IceCream extends PhysicsP2Sprite {
-    constructor(game: Phaser.Game, x: number, y: number, frame?: string | number, group?: Phaser.Group) {
-        super(game, x, y, Assets.Spritesheets.SpritesheetsIcecreams1572066.getName(), frame, 0.5, 0);
+    constructor(game: Phaser.Game, x: number, y: number, frame?: string | number) {
+        super(game, x, y, Assets.Spritesheets.SpritesheetsIcecreams1572066.getName(), frame, 0.5, 0.5);
     }
 }
 

@@ -25,12 +25,12 @@ export class PhysicsP2Sprite extends PhysicsSprite {
         else if (scale)
             this.scale = <Phaser.Point>scale;
 
+        this.game.physics.p2.enable(this);
 
         if (typeof (anchor) === 'number')
             this.anchor.setTo(anchor);
         else if (anchor)
             this.anchor = <Phaser.Point>anchor;
-        this.game.physics.p2.enable(this);
         this.body.debug = true;
     }
 }
