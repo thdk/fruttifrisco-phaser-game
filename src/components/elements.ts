@@ -11,20 +11,26 @@ export enum MachineSize {
 }
 
 export class Machine extends Group {
+    public platform: Phaser.Sprite;
+    public scanner: Phaser.Sprite;
     constructor(game: Phaser.Game, x: number, y: number, size: MachineSize, collisionGroup?: Physics.P2.CollisionGroup, collidesWith?: Physics.P2.CollisionGroup | Physics.P2.CollisionGroup[], name?: string, addToStage?: boolean, enableBody?: boolean, physicsBodyType?: number) {
         super(game, null, name, true, enableBody, physicsBodyType);
-        const platform = this.createPlatform(size, x, y);
-        if (!platform)
+
+        this.platform = this.createPlatform(size, x, y);
+        if (!this.platform)
             return;
 
-        platform.inputEnabled = true;
-        platform.input.priorityID = 3;
-        if (collisionGroup) {
-            platform.body.setCollisionGroup(collisionGroup);
-            platform.body.collides(collidesWith);
-        }
+        this.scanner = new PhysicsP2Sprite(game, game.world.centerX, game.world.centerY, null);
+        this.scanner.body.setRectangle(400, 400);
+        this.scanner.body.static = true;
 
-        this.add(platform);
+        this.add(this.scanner);
+
+        this.platform.inputEnabled = true;
+        this.platform.input.priorityID = 3;
+
+        this.add(this.platform);
+
 
         this.createReceivers(size);
     }

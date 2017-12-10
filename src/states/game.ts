@@ -6,7 +6,7 @@ import { Physics } from 'phaser-ce';
 export default class Title extends Phaser.State {
     private icecreams: Phaser.Group;
     private monsters: Phaser.Group;
-    private frontPlatforms: Phaser.Group;
+    private machines: Phaser.Group;
     private spraycanActive = false;
     private spraycan: Phaser.Sprite;
 
@@ -47,7 +47,7 @@ export default class Title extends Phaser.State {
         this.icecreams.physicsBodyType = Phaser.Physics.P2JS;
         this.monsters = this.game.add.physicsGroup();
         this.monsters.physicsBodyType = Phaser.Physics.P2JS;
-        this.frontPlatforms = this.game.add.group();
+        this.machines = this.game.add.group();
 
         this.spraycan = new Spraycan(this.game, 480, 20);
         this.spraycan.events.onInputDown.add(this.grabSpraycan, this);
@@ -56,11 +56,18 @@ export default class Title extends Phaser.State {
         ground.body.setCollisionGroup(this.platformCollisionGroup);
         ground.body.collides([this.monsterCollisionGroup, this.icecreamCollisionGroup]);
 
-        const sourceMachine = this.frontPlatforms.add(new Machine(this.game, 57, 543, MachineSize.large, this.platformCollisionGroup, [this.monsterCollisionGroup]));
-        const tasteMachine = this.frontPlatforms.add(new Machine(this.game, 781, 543, MachineSize.small, this.platformCollisionGroup, [this.monsterCollisionGroup]));
 
         this.startDropMonsters();
         this.startMakeIcecream();
+    }
+
+    private createMachines() {
+        const sourceMachine = this.machines.add(new Machine(this.game, 57, 543, MachineSize.large, this.platformCollisionGroup, [this.monsterCollisionGroup]));
+        sourceMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
+        sourceMachine.platform.body.collides(this.monsterCollisionGroup);
+        const tasteMachine = this.machines.add(new Machine(this.game, 781, 543, MachineSize.small, this.platformCollisionGroup, [this.monsterCollisionGroup]));
+        tasteMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
+        tasteMachine.platform.body.collides(this.monsterCollisionGroup);
     }
 
     private startMakeIcecream() {

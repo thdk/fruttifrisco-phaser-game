@@ -31,6 +31,6 @@ export class PhysicsP2Sprite extends PhysicsSprite {
             this.anchor.setTo(anchor);
         else if (anchor)
             this.anchor = <Phaser.Point>anchor;
-        this.body.debug = false;
+        this.body.debug = true;
     }
 }
