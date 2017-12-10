@@ -64,7 +64,8 @@ export default class Title extends Phaser.State {
     }
 
     private startMakeIcecream() {
-        const icecream = this.icecreams.add(new IceCream(this.game, 0, 620, 0));
+        const icecream = this.icecreams.add(new IceCream(this.game, 0, 670, 0));
+        icecream.body.moveRight(100);
         icecream.body.setCollisionGroup(this.icecreamCollisionGroup);
         icecream.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup]);
     }

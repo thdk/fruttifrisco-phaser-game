@@ -29,7 +29,7 @@ export class Machine extends Group {
         this.createReceivers(size);
     }
 
-    private createPlatform(size: MachineSize, x: number, y:number): platforms.MachinePlatform | null {
+    private createPlatform(size: MachineSize, x: number, y: number): platforms.MachinePlatform | null {
         switch (size) {
             case (MachineSize.small):
                 return new platforms.TasteMachinePlatform(this.game, x, y);
@@ -55,6 +55,10 @@ export class Machine extends Group {
 export class IceCream extends PhysicsP2Sprite {
     constructor(game: Phaser.Game, x: number, y: number, frame?: string | number) {
         super(game, x, y, Assets.Spritesheets.SpritesheetsIcecreams1572066.getName(), frame, 0.5, 0.5);
+        this.body.static = true;
+    }
+    public update() {
+        console.log(this.x);
     }
 }
 
