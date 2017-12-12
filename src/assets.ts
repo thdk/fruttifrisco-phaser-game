@@ -74,6 +74,16 @@ export namespace Spritesheets {
         static getMargin(): number { return 0; }
         static getSpacing(): number { return 0; }
     }
+    export class SpritesheetsIngredient1652916 {
+        static getName(): string { return 'ingredient.[165,291,6,0,0]'; }
+
+        static getPNG(): string { return require('assets/spritesheets/ingredient.[165,291,6,0,0].png'); }
+        static getFrameWidth(): number { return 165; }
+        static getFrameHeight(): number { return 291; }
+        static getFrameMax(): number { return 6; }
+        static getMargin(): number { return 0; }
+        static getSpacing(): number { return 0; }
+    }
     export class SpritesheetsLoadingSprite12809608 {
         static getName(): string { return 'loading-sprite.[1280,960,8,0,0]'; }
 
