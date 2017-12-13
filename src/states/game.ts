@@ -23,11 +23,11 @@ export default class Title extends Phaser.State {
 
     public create(): void {
         this.productList = new Array();
-        const vanilleIngredients: fruttifrisco.IproductIngredient[] = [{ code: 'egg', quantity: 1 }, { code: 'milk', quantity: 1 }, { code: 'suggar', quantity: 1 }, { code: 'vanilla', quantity: 1 }];
+        const vanilleIngredients: fruttifrisco.IproductIngredient[] = [{ code: fruttifrisco.IngredientName.Egg, quantity: 2 }, { code: fruttifrisco.IngredientName.Milk, quantity: 1 }, { code: fruttifrisco.IngredientName.Suggar, quantity: 1 }, { code: fruttifrisco.IngredientName.Vanilla, quantity: 1 }];
         this.productList.push({ code: 'Vanille', ingredients: vanilleIngredients });
-        const chocolateIngredients: fruttifrisco.IproductIngredient[] = [{ code: 'egg', quantity: 1 }, { code: 'milk', quantity: 1 }, { code: 'suggar', quantity: 1 }, { code: 'chocolate', quantity: 1 }];
+        const chocolateIngredients: fruttifrisco.IproductIngredient[] = [{ code: fruttifrisco.IngredientName.Egg, quantity: 3 }, { code: fruttifrisco.IngredientName.Milk, quantity: 1 }, { code: fruttifrisco.IngredientName.Suggar, quantity: 1 }, { code: fruttifrisco.IngredientName.Chocolate, quantity: 1 }];
         this.productList.push({ code: 'Chocolate', ingredients: chocolateIngredients });
-        const strawberryIngredients: fruttifrisco.IproductIngredient[] = [{ code: 'egg', quantity: 1 }, { code: 'milk', quantity: 1 }, { code: 'suggar', quantity: 1 }, { code: 'strawberry', quantity: 1 }];
+        const strawberryIngredients: fruttifrisco.IproductIngredient[] = [{ code: fruttifrisco.IngredientName.Egg, quantity: 4 }, { code: fruttifrisco.IngredientName.Milk, quantity: 1 }, { code: fruttifrisco.IngredientName.Suggar, quantity: 1 }, { code: fruttifrisco.IngredientName.Strawberry, quantity: 1 }];
         this.productList.push({ code: 'Strawberry', ingredients: strawberryIngredients });
 
         this.game.physics.startSystem(Phaser.Physics.P2JS);
@@ -76,14 +76,14 @@ export default class Title extends Phaser.State {
     }
 
     private createMachines() {
-        const sourceMachine: Machine = this.machines.add(new Machine(this.game, 57, 543, MachineSize.large, ['egg', 'suggar', 'milk']));
+        const sourceMachine: Machine = this.machines.add(new Machine(this.game, 57, 543, MachineSize.large, [fruttifrisco.IngredientName.Egg, fruttifrisco.IngredientName.Milk, fruttifrisco.IngredientName.Suggar]));
         sourceMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
         sourceMachine.platform.body.collides([this.monsterCollisionGroup, this.icecreamCollisionGroup]);
         sourceMachine.scanner.body.setCollisionGroup(this.platformCollisionGroup);
         sourceMachine.scanner.body.collides(this.icecreamCollisionGroup, this.iceCreamArrived);
         sourceMachine.onProductFinished.add((product) => console.log(product));
 
-        const tasteMachine: Machine = this.machines.add(new Machine(this.game, 781, 543, MachineSize.small, ['chocolate', 'vanilla', 'strawberry']));
+        const tasteMachine: Machine = this.machines.add(new Machine(this.game, 781, 543, MachineSize.small, [fruttifrisco.IngredientName.Chocolate, fruttifrisco.IngredientName.Vanilla, fruttifrisco.IngredientName.Strawberry]));
         tasteMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
         tasteMachine.platform.body.collides(this.monsterCollisionGroup);
     }
@@ -126,7 +126,7 @@ export default class Title extends Phaser.State {
 
     private startMakeIcecream() {
         const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, 670, 0));
-        icecream.ingredients = this.getIngredientsForProduct(icecream.code);
+        icecream.ingredients = this.getIngredientsForProduct(icecream.name);
         icecream.body.moveRight(100);
         icecream.body.setCollisionGroup(this.icecreamCollisionGroup);
         icecream.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup]);

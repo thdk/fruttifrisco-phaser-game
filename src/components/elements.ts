@@ -68,21 +68,21 @@ export class Machine extends Group {
     }
 
     private resetReceivers() {
-        this.receivers.forEach(r => r.ingredient = null);
+        this.receivers.forEach(r => r.setIngredient(null));
     }
 
     private assignReceivers() {
         if (!this.receivers)
             return;
 
-        this.receivers.filter(receiver => !receiver.ingredient).forEach(receiver => {
-            receiver.ingredient = this.requiredIngredients.pop();
+        this.receivers.filter(receiver => !receiver.isAssigned()).forEach(receiver => {
+            receiver.setIngredient(this.requiredIngredients.pop());
         });
 
         console.log('new requried ingredient list:');
         console.log(this.requiredIngredients);
 
-        if (!this.receivers.filter(r => r.ingredient).length) {
+        if (!this.receivers.filter(r => r.isAssigned()).length) {
             this.productInProgress.reset(this.game.world.centerX, this.game.world.centerY);
             this.onProductFinished.dispatch(this.productInProgress);
             this.productInProgress = null;
@@ -116,16 +116,11 @@ export class Machine extends Group {
         }
 
         this.receivers.forEach(receiver => {
-            receiver.onReceive.add((receiver: Receiver, ingredient: Ingredient) => {
-                if (receiver.ingredient && receiver.ingredient === ingredient.name) {
-                    console.log('correct ingredient received');
-                    receiver.ingredient = null;
-                    this.productInProgress.ingredients.filter(i => i.code === ingredient.name)[0].quantity--;
+            receiver.onReceive.add((receiver: Receiver, ingredient: Ingredient, correct: boolean) => {
+                if (correct) {
+                    receiver.setIngredient(null);
+                    this.productInProgress.ingredients.filter(i => i.code === ingredient.code)[0].quantity--;
                     this.assignReceivers();
-                }
-                else {
-                    console.log('wrong ingredient received');
-                    console.log('expected: ' + receiver.ingredient);
                 }
             });
         });
@@ -143,7 +138,7 @@ export class IceCream extends PhysicsP2Sprite implements fruttifrisco.IProduct {
     public isScanned = false;
     constructor(game: Phaser.Game, x: number, y: number, frame?: string | number) {
         super(game, x, y, Assets.Spritesheets.SpritesheetsIcecreams1572066.getName(), frame, 0.5, 0.5);
-        this.code = IceCreamType[this.getRandomTaste()];
+        this.name = IceCreamType[this.getRandomTaste()];
     }
 
     private getRandomTaste(): IceCreamType {
@@ -151,31 +146,47 @@ export class IceCream extends PhysicsP2Sprite implements fruttifrisco.IProduct {
     }
 }
 
-export class Receiver extends SimpleSprite {
+export class Receiver extends Phaser.Group {
     public onReceive: Phaser.Signal;
-    public ingredient?: fruttifrisco.IngredientName;
+    private ingredientCode?: fruttifrisco.IngredientName;
+    protected funnel: SimpleSprite;
+    public display: SimpleSprite;
     constructor(game: Phaser.Game, x: number, y: number, frame?: string | number) {
-        super(game, x, y, Assets.Spritesheets.SpritesheetsReceivers3004208.getName(), frame, 0.3, new Phaser.Point(0, 1));
+        super(game);
+        this.funnel = this.add(new SimpleSprite(game, x, y, Assets.Spritesheets.SpritesheetsReceivers3004208.getName(), frame, 0.3, new Phaser.Point(0, 1)));
         this.onReceive = new Phaser.Signal();
+        this.display = new SimpleSprite(game, x, y + 30, Assets.Spritesheets.SpritesheetsIngredient1652916.getName(), 5, 0.5);
+        this.display.visible = false;
+        this.add(this.display);
     }
 
     public receive(ingredient: Ingredient) {
-        this.animations.play('receive');
-        this.onReceive.dispatch(this, ingredient);
+        this.funnel.animations.play('receive');
+        this.onReceive.dispatch(this, ingredient, this.ingredientCode === ingredient.code);
+    }
+
+    public setIngredient(name?: fruttifrisco.IngredientName) {
+        this.ingredientCode = name;
+        this.display.frame = name;
+        this.display.visible = !!name;
+    }
+
+    public isAssigned(): boolean {
+        return !!this.ingredientCode;
     }
 }
 
 export class GreenReceiver extends Receiver {
     constructor(game: Phaser.Game, x: number, y: number) {
         super(game, x, y, 0);
-        this.animations.add('receive', [1, 2, 3, 0], 8, false);
+        this.funnel.animations.add('receive', [1, 2, 3, 0], 8, false);
     }
 }
 
 export class RedReceiver extends Receiver {
     constructor(game: Phaser.Game, x: number, y: number) {
         super(game, x, y, 4);
-        this.animations.add('receive', [4, 5, 6, 4], 8, false);
+        this.funnel.animations.add('receive', [4, 5, 6, 4], 8, false);
     }
 }
 
@@ -212,46 +223,46 @@ export class Spraycan extends SimpleSprite {
 }
 
 export class Ingredient extends DraggableSprite {
-    public name: fruttifrisco.IngredientName;
+    public code: fruttifrisco.IngredientName;
     constructor(game: Phaser.Game, x: number, y: number, frame: string | number, ingredient: fruttifrisco.IngredientName) {
         super(game, x, y, Assets.Spritesheets.SpritesheetsIngredient1652916.getName(), frame, 0.5);
-        this.name = ingredient;
+        this.code = ingredient;
     }
 }
 
 export class Egg extends Ingredient {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number) {
-        super(game, x, y, 3, 'egg');
+        super(game, x, y, 3, fruttifrisco.IngredientName.Egg);
     }
 }
 
 export class Suggar extends Ingredient {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number) {
-        super(game, x, y, 5, 'suggar');
+        super(game, x, y, 5, fruttifrisco.IngredientName.Suggar);
     }
 }
 
 export class Milk extends Ingredient {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number) {
-        super(game, x, y, 4, 'milk');
+        super(game, x, y, 4, fruttifrisco.IngredientName.Milk);
     }
 }
 
 export class Vanilla extends Ingredient {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number) {
-        super(game, x, y, 0, 'vanilla');
+        super(game, x, y, 0, fruttifrisco.IngredientName.Vanilla);
     }
 }
 
 export class Chocolate extends Ingredient {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number) {
-        super(game, x, y, 1, 'chocolate');
+        super(game, x, y, 1, fruttifrisco.IngredientName.Chocolate);
     }
 }
 
 export class Strawberry extends Ingredient {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number) {
-        super(game, x, y, 2, 'milk');
+        super(game, x, y, 2, fruttifrisco.IngredientName.Strawberry);
     }
 }
 
