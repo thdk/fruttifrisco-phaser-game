@@ -24,12 +24,6 @@ export class DraggableSprite extends SimpleSprite {
         this.inputEnabled = true;
         this.input.useHandCursor = true;
         this.input.enableDrag(true, true, true);
-        this.events.onDragStop.add(() => this.onDragStop());
-    }
-
-    private onDragStop() {
-        this.x = this.originalPosition.x;
-        this.y = this.originalPosition.y;
     }
 }
 

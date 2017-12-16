@@ -46,11 +46,6 @@ export namespace Images {
 
         static getPNG(): string { return require('assets/images/tastemachine.png'); }
     }
-    export class SpritesheetsMonster {
-        static getName(): string { return 'monster'; }
-
-        static getPNG(): string { return require('assets/spritesheets/monster.png'); }
-    }
 }
 
 export namespace Spritesheets {
@@ -74,13 +69,13 @@ export namespace Spritesheets {
         static getMargin(): number { return 0; }
         static getSpacing(): number { return 0; }
     }
-    export class SpritesheetsIngredient1652916 {
-        static getName(): string { return 'ingredient.[165,291,6,0,0]'; }
+    export class SpritesheetsIngredients14813912 {
+        static getName(): string { return 'ingredients.[148,139,12,0,0]'; }
 
-        static getPNG(): string { return require('assets/spritesheets/ingredient.[165,291,6,0,0].png'); }
-        static getFrameWidth(): number { return 165; }
-        static getFrameHeight(): number { return 291; }
-        static getFrameMax(): number { return 6; }
+        static getPNG(): string { return require('assets/spritesheets/ingredients.[148,139,12,0,0].png'); }
+        static getFrameWidth(): number { return 148; }
+        static getFrameHeight(): number { return 139; }
+        static getFrameMax(): number { return 12; }
         static getMargin(): number { return 0; }
         static getSpacing(): number { return 0; }
     }
@@ -91,16 +86,6 @@ export namespace Spritesheets {
         static getFrameWidth(): number { return 1280; }
         static getFrameHeight(): number { return 960; }
         static getFrameMax(): number { return 8; }
-        static getMargin(): number { return 0; }
-        static getSpacing(): number { return 0; }
-    }
-    export class SpritesheetsMetalslugMummy374518 {
-        static getName(): string { return 'metalslug_mummy.[37,45,18,0,0]'; }
-
-        static getPNG(): string { return require('assets/spritesheets/metalslug_mummy.[37,45,18,0,0].png'); }
-        static getFrameWidth(): number { return 37; }
-        static getFrameHeight(): number { return 45; }
-        static getFrameMax(): number { return 18; }
         static getMargin(): number { return 0; }
         static getSpacing(): number { return 0; }
     }

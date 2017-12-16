@@ -15,20 +15,22 @@ export default class Title extends Phaser.State {
     private monsterCollisionGroup: Phaser.Physics.P2.CollisionGroup;
     private icecreamCollisionGroup: Phaser.Physics.P2.CollisionGroup;
     private scannerCollisionGroup: Phaser.Physics.P2.CollisionGroup;
-    private monsterMaterial: Physics.P2.Material;
-    private machineMaterial: Physics.P2.Material;
-    private conveyorBeltMaterial: Physics.P2.Material;
 
     private productList: fruttifrisco.IProduct[];
+    private icecreamTimer: Phaser.TimerEvent;
+
+    private timer: Phaser.Timer;
 
     public create(): void {
+        this.timer = this.game.time.events;
+
         this.productList = new Array();
         const vanilleIngredients: fruttifrisco.IproductIngredient[] = [{ code: fruttifrisco.IngredientName.Egg, quantity: 2 }, { code: fruttifrisco.IngredientName.Milk, quantity: 1 }, { code: fruttifrisco.IngredientName.Suggar, quantity: 1 }, { code: fruttifrisco.IngredientName.Vanilla, quantity: 1 }];
-        this.productList.push({ code: 'Vanille', ingredients: vanilleIngredients });
+        this.productList.push({ name: 'Vanilla', ingredients: vanilleIngredients });
         const chocolateIngredients: fruttifrisco.IproductIngredient[] = [{ code: fruttifrisco.IngredientName.Egg, quantity: 3 }, { code: fruttifrisco.IngredientName.Milk, quantity: 1 }, { code: fruttifrisco.IngredientName.Suggar, quantity: 1 }, { code: fruttifrisco.IngredientName.Chocolate, quantity: 1 }];
-        this.productList.push({ code: 'Chocolate', ingredients: chocolateIngredients });
+        this.productList.push({ name: 'Chocolate', ingredients: chocolateIngredients });
         const strawberryIngredients: fruttifrisco.IproductIngredient[] = [{ code: fruttifrisco.IngredientName.Egg, quantity: 4 }, { code: fruttifrisco.IngredientName.Milk, quantity: 1 }, { code: fruttifrisco.IngredientName.Suggar, quantity: 1 }, { code: fruttifrisco.IngredientName.Strawberry, quantity: 1 }];
-        this.productList.push({ code: 'Strawberry', ingredients: strawberryIngredients });
+        this.productList.push({ name: 'Strawberry', ingredients: strawberryIngredients });
 
         this.game.physics.startSystem(Phaser.Physics.P2JS);
         this.game.physics.p2.setImpactEvents(true);
@@ -47,9 +49,7 @@ export default class Title extends Phaser.State {
 
         //  This part is vital if you want the objects with their own collision groups to still collide with the world bounds
         //  (which we do) - what this does is adjust the bounds to use its own collision group.
-        this.game.physics.p2.updateBoundsCollisionGroup();
-
-        this.monsterMaterial = new Physics.P2.Material('monsterMaterial');
+        // this.game.physics.p2.updateBoundsCollisionGroup();
 
         // DO NOT ADD ANYTHING TO THE GAME BEFORE THIS LINE
         // ELSE IT WILL BE HIDDEN BEHIND THE BACKGROUND IMAGE
@@ -67,7 +67,7 @@ export default class Title extends Phaser.State {
 
         const ground = new platforms.Ground(this.game, 820);
         ground.body.setCollisionGroup(this.platformCollisionGroup);
-        ground.body.collides([this.monsterCollisionGroup, this.icecreamCollisionGroup]);
+        ground.body.collides([this.monsterCollisionGroup]);
 
         this.createMachines();
         this.startDropMonsters();
@@ -80,31 +80,43 @@ export default class Title extends Phaser.State {
         sourceMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
         sourceMachine.platform.body.collides([this.monsterCollisionGroup, this.icecreamCollisionGroup]);
         sourceMachine.scanner.body.setCollisionGroup(this.platformCollisionGroup);
-        sourceMachine.scanner.body.collides(this.icecreamCollisionGroup, this.iceCreamArrived);
-        sourceMachine.onProductFinished.add((product) => console.log(product));
+        sourceMachine.scanner.body.collides(this.icecreamCollisionGroup);
+        sourceMachine.onProductFinished.add(() => this.productFinished());
 
         const tasteMachine: Machine = this.machines.add(new Machine(this.game, 781, 543, MachineSize.small, [fruttifrisco.IngredientName.Chocolate, fruttifrisco.IngredientName.Vanilla, fruttifrisco.IngredientName.Strawberry]));
         tasteMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
         tasteMachine.platform.body.collides(this.monsterCollisionGroup);
+        tasteMachine.scanner.body.setCollisionGroup(this.platformCollisionGroup);
+        tasteMachine.scanner.body.collides(this.icecreamCollisionGroup);
     }
 
     private createStorage() {
         const ingredients = [
-            new Vanilla(this.game, 0, 0),
-            new Chocolate(this.game, 200, 0),
-            new Strawberry(this.game, 400, 0),
-            new Egg(this.game, 600, 0),
-            new Milk(this.game, 800, 0),
-            new Suggar(this.game, 1000, 0)
+            new Egg(this.game, 20, 10),
+            new Milk(this.game, 120, 10),
+            new Suggar(this.game, 250, 10),
+            new Strawberry(this.game, 600, 10),
+            new Chocolate(this.game, 710, 10),
+            new Vanilla(this.game, 840, 10)
         ];
 
         ingredients.forEach(ingredient => {
+            ingredient.events.onDragStart.add((ingredient: Ingredient, pointer: Phaser.Pointer) => { (<number>ingredient.frame) -= 6; });
             ingredient.events.onDragStop.add((ingredient: Ingredient, pointer: Phaser.Pointer) => this.ingredientDropped(ingredient, pointer));
             this.game.world.add(ingredient);
         });
     }
 
+    private productFinished() {
+    }
+
     private ingredientDropped(ingredient: Ingredient, pointer: Phaser.Pointer) {
+        // reset to original position + reset frame
+        (<number>ingredient.frame) += 6;
+        ingredient.x = ingredient.originalPosition.x;
+        ingredient.y = ingredient.originalPosition.y;
+
+        // check if ingredient is dropped on a receiver
         this.machines.children.forEach((m: Machine) => {
             m.receivers.forEach((receiver: Receiver) => {
                 if (receiver.getBounds().contains(pointer.position.x, pointer.position.y)) {
@@ -114,21 +126,22 @@ export default class Title extends Phaser.State {
         });
     }
 
-    private iceCreamArrived(a, b) {
-        const icecream: IceCream = b.sprite;
-        const machine: Machine = a.sprite.parent;
-        machine.scanProduct(icecream);
-    }
-
-    private getIngredientsForProduct(productcode: string): fruttifrisco.IproductIngredient[] {
-        return this.productList.filter(p => p.code === productcode).map(p => p.ingredients)[0];
+    private getIngredientsForProduct(productname: string): fruttifrisco.IproductIngredient[] {
+        // return a cloned array with ingredients so it can be modfied by each instance without infecting the original source !!!
+        return this.productList.filter(p => p.name === productname).map(p => p.ingredients)[0].map(x => Object.assign({}, x));
     }
 
     private startMakeIcecream() {
-        const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, 670, 0));
+        this.makeIceCream();
+        this.icecreamTimer = this.timer.loop(20000, this.makeIceCream, this);
+    }
+
+    private makeIceCream() {
+        const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, 670));
         icecream.ingredients = this.getIngredientsForProduct(icecream.name);
         icecream.body.moveRight(100);
         icecream.body.setCollisionGroup(this.icecreamCollisionGroup);
+        icecream.body.onBeginContact.add(this.iceCreamHit);
         icecream.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup]);
     }
 
@@ -146,6 +159,15 @@ export default class Title extends Phaser.State {
         monster.body.setCollisionGroup(this.monsterCollisionGroup);
         monster.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup, this.icecreamCollisionGroup], this.monsterDropped, this);
         monster.input.enabled = this.spraycanActive;
+    }
+
+    private iceCreamHit(bodyA: Physics.P2.Body, bodyB: any, shapeA, shapeB, equation) {
+        if (bodyA.sprite instanceof Monster)
+            (<IceCream>shapeA.body.parent.sprite).frame = 4;
+        else if (bodyA.sprite.parent instanceof Machine)
+            (<Machine>bodyA.sprite.parent).scanProduct(<IceCream>shapeA.body.parent.sprite);
+
+        return false;
     }
 
     private monsterDropped(monster: Physics.P2.Body, aObject2: Physics.P2.Body, context: any) {

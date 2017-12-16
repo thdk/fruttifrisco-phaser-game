@@ -10,7 +10,7 @@ export namespace fruttifrisco {
     }
 
     export interface IProduct {
-        code: string;
+        name: string;
         ingredients: IproductIngredient[];
     }
 
