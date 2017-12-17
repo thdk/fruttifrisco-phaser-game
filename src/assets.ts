@@ -64,6 +64,16 @@ export namespace Images {
 }
 
 export namespace Spritesheets {
+    export class SpritesheetsIcecreamsFinished1562583 {
+        static getName(): string { return 'icecreams-finished.[156,258,3,0,0]'; }
+
+        static getPNG(): string { return require('assets/spritesheets/icecreams-finished.[156,258,3,0,0].png'); }
+        static getFrameWidth(): number { return 156; }
+        static getFrameHeight(): number { return 258; }
+        static getFrameMax(): number { return 3; }
+        static getMargin(): number { return 0; }
+        static getSpacing(): number { return 0; }
+    }
     export class SpritesheetsIcecreams1572066 {
         static getName(): string { return 'icecreams.[157,206,6,0,0]'; }
 

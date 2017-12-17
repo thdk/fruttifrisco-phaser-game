@@ -19,8 +19,18 @@ export default class Title extends Phaser.State {
 
     private productList: fruttifrisco.IProduct[];
     private icecreamTimer: Phaser.TimerEvent;
+    private monsterTimer: Phaser.TimerEvent;
 
     private timer: Phaser.Timer;
+
+    private score: Phaser.Group;
+    private scoreVanilla: Phaser.Text;
+    private scoreChocolate: Phaser.Text;
+    private scoreStrawberry: Phaser.Text;
+
+    private producedProducts: IceCream[];
+    private lives = 5;
+    private liveCount: Phaser.Text;
 
     public create(): void {
         this.timer = this.game.time.events;
@@ -62,7 +72,22 @@ export default class Title extends Phaser.State {
 
         const headerbg = this.backgrounds.add(new Phaser.TileSprite(this.game, 0, 0, this.game.world.width, 223, Assets.Images.ImagesBgHeader.getName()));
 
-        const ground = new platforms.Ground(this.game, this.game.world.height - 272);
+        this.liveCount = this.game.add.existing(new Phaser.Text(this.game, 20, 0, this.lives.toString(), { fontSize: 60, fill: '#F00' }));
+
+        this.score = this.game.add.group();
+        this.scoreVanilla = this.score.add(new Phaser.Text(this.game, this.game.world.width - 115, 240, '0 x', { fontSize: 30, fill: '#000' }));
+        const vanilla = this.score.add(new Phaser.Sprite(this.game, this.game.world.width - 60, 223, Assets.Spritesheets.SpritesheetsIcecreamsFinished1562583.getName(), 0));
+        vanilla.scale.setTo(0.3);
+
+        this.scoreStrawberry = this.score.add(new Phaser.Text(this.game, this.game.world.width - 115, 340, '0 x', { fontSize: 30, fill: '#000' }));
+        const strawberry = this.score.add(new Phaser.Sprite(this.game, this.game.world.width - 60, 323, Assets.Spritesheets.SpritesheetsIcecreamsFinished1562583.getName(), 1));
+        strawberry.scale.setTo(0.3);
+
+        this.scoreChocolate = this.score.add(new Phaser.Text(this.game, this.game.world.width - 115, 440, '0 x', { fontSize: 30, fill: '#000' }));
+        const chocolate = this.score.add(new Phaser.Sprite(this.game, this.game.world.width - 60, 423, Assets.Spritesheets.SpritesheetsIcecreamsFinished1562583.getName(), 2));
+        chocolate.scale.setTo(0.3);
+
+        const ground = new platforms.Ground(this.game, this.game.world.height - 172);
         ground.body.setCollisionGroup(this.platformCollisionGroup);
         ground.body.collides([this.monsterCollisionGroup]);
 
@@ -80,17 +105,18 @@ export default class Title extends Phaser.State {
 
         this.startMakeIcecream();
         this.startDropMonsters();
+
+        this.producedProducts = new Array();
     }
 
     private createMachines() {
-        const sourceMachine: Machine = this.machines.add(new Machine(this.game, 150, this.game.world.height - 400, MachineSize.large, [fruttifrisco.IngredientName.Egg, fruttifrisco.IngredientName.Milk, fruttifrisco.IngredientName.Suggar], this.backgrounds));
+        const sourceMachine: Machine = this.machines.add(new Machine(this.game, 150, this.game.world.height - 300, MachineSize.large, [fruttifrisco.IngredientName.Egg, fruttifrisco.IngredientName.Milk, fruttifrisco.IngredientName.Suggar], this.backgrounds));
         sourceMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
         sourceMachine.platform.body.collides([this.monsterCollisionGroup, this.icecreamCollisionGroup]);
         sourceMachine.scanner.body.setCollisionGroup(this.platformCollisionGroup);
         sourceMachine.scanner.body.collides(this.icecreamCollisionGroup);
-        sourceMachine.onProductFinished.add(() => this.productFinished());
 
-        const tasteMachine: Machine = this.machines.add(new Machine(this.game, this.game.world.width - 450, this.game.world.height - 400, MachineSize.small, [fruttifrisco.IngredientName.Chocolate, fruttifrisco.IngredientName.Vanilla, fruttifrisco.IngredientName.Strawberry], this.backgrounds));
+        const tasteMachine: Machine = this.machines.add(new Machine(this.game, this.game.world.width - 450, this.game.world.height - 300, MachineSize.small, [fruttifrisco.IngredientName.Chocolate, fruttifrisco.IngredientName.Vanilla, fruttifrisco.IngredientName.Strawberry], this.backgrounds));
         tasteMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
         tasteMachine.platform.body.collides(this.monsterCollisionGroup);
         tasteMachine.scanner.body.setCollisionGroup(this.platformCollisionGroup);
@@ -119,9 +145,6 @@ export default class Title extends Phaser.State {
         });
     }
 
-    private productFinished() {
-    }
-
     private ingredientDropped(ingredient: Ingredient, pointer: Phaser.Pointer) {
         // reset to original position + reset frame
         (<number>ingredient.frame) += 6;
@@ -143,22 +166,39 @@ export default class Title extends Phaser.State {
         return this.productList.filter(p => p.name === productname).map(p => p.ingredients)[0].map(x => Object.assign({}, x));
     }
 
+    private updateScores() {
+        this.scoreVanilla.text = this.producedProducts.filter(p => p.name === IceCreamType[IceCreamType.Vanilla]).length.toString() + 'x';
+        this.scoreChocolate.text = this.producedProducts.filter(p => p.name === IceCreamType[IceCreamType.Chocolate]).length.toString() + 'x';
+        this.scoreStrawberry.text = this.producedProducts.filter(p => p.name === IceCreamType[IceCreamType.Strawberry]).length.toString() + 'x';
+    }
+
     private startMakeIcecream() {
         this.makeIceCream();
         this.icecreamTimer = this.timer.loop(20000, this.makeIceCream, this);
     }
 
+    private icecreamCreated(icecream: IceCream) {
+        if (icecream.isFailed)
+            return;
+        else {
+            this.producedProducts.push(icecream);
+            this.updateScores();
+        }
+    }
+
     private makeIceCream() {
-        const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, this.game.world.height - 290));
+        const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, this.game.world.height - 190));
         icecream.ingredients = this.getIngredientsForProduct(icecream.name);
         icecream.body.moveRight(100);
         icecream.body.setCollisionGroup(this.icecreamCollisionGroup);
-        icecream.body.onBeginContact.add(this.iceCreamHit);
+        icecream.body.onBeginContact.add((bodyA: Physics.P2.Body, bodyB: any, shapeA, shapeB, equation) => this.iceCreamHit(bodyA, bodyB, shapeA, shapeB, equation));
+        icecream.checkWorldBounds = true;
+        icecream.events.onOutOfBounds.add((ice) => this.icecreamCreated(ice));
         icecream.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup]);
     }
 
     private startDropMonsters() {
-        this.game.time.events.loop(5000, this.dropMonster, this);
+        this.monsterTimer = this.game.time.events.loop(5000, this.dropMonster, this);
     }
 
     private grabSpraycan() {
@@ -176,12 +216,21 @@ export default class Title extends Phaser.State {
     private iceCreamHit(bodyA: Physics.P2.Body, bodyB: any, shapeA, shapeB, equation) {
         if (!bodyA)
             return;
-        if (bodyA.sprite instanceof Monster)
-            (<IceCream>shapeA.body.parent.sprite).frame = 4;
+        if (bodyA.sprite instanceof Monster) {
+            const ice = (<IceCream>shapeA.body.parent.sprite);
+            if (ice.isFailed)
+                return;
+
+            ice.failed();
+            this.lives--;
+            this.liveCount.text = this.lives.toString();
+            if (this.lives === 0)
+                this.gameOver();
+        }
         else if (bodyA.sprite.parent instanceof Machine)
             (<Machine>bodyA.sprite.parent).scanProduct(<IceCream>shapeA.body.parent.sprite);
 
-        return false;
+        equation.enabled = false;
     }
 
     private monsterDropped(monster: Physics.P2.Body, aObject2: Physics.P2.Body, context: any) {
@@ -204,6 +253,15 @@ export default class Title extends Phaser.State {
 
     private killSprayCloud(cloud: Phaser.Sprite) {
         cloud.kill();
+    }
+
+    private gameOver() {
+        const text = this.game.add.text(this.game.world.centerX, this.game.world.centerY, 'GAME OVER', { fontSize: 60, fill: '#000' });
+        text.anchor.setTo(0.5);
+        this.monsters.destroy();
+        this.icecreams.destroy();
+        this.icecreamTimer.timer.destroy();
+        this.monsterTimer.timer.destroy();
     }
 
     public update() {

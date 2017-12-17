@@ -14,7 +14,7 @@ export enum MachineSize {
 export class Machine extends Group {
     private requiredIngredients: fruttifrisco.IngredientName[];
     private inputIngredients: fruttifrisco.IngredientName[];
-    private icecream: IceCream;
+    private product: IceCream;
 
     public platform: Phaser.Sprite;
     public scanner: PhysicsP2Sprite;
@@ -45,15 +45,19 @@ export class Machine extends Group {
         this.addMultiple(this.receivers);
     }
 
-    public scanProduct(icecream: IceCream) {
+    public scanProduct(product: IceCream) {
         // avoid multiple asynchronous collide callbacks
-        if (icecream.isScanned)
+        if (product.isScanned)
             return;
 
-        icecream.isScanned = true;
-        icecream.kill();
+        // don't pickup failed products
+        if (product.isFailed)
+            return;
+
+        product.isScanned = true;
+        product.kill();
         this.requiredIngredients = new Array();
-        this.requiredIngredients = this.requiredIngredients.concat(...icecream.ingredients.filter(i => this.inputIngredients.indexOf(i.code) !== -1).map(ingredient => {
+        this.requiredIngredients = this.requiredIngredients.concat(...product.ingredients.filter(i => this.inputIngredients.indexOf(i.code) !== -1).map(ingredient => {
             const ingredients: fruttifrisco.IngredientName[] = new Array();
             for (let i: number = 0; i < ingredient.quantity; i++) {
                 ingredients.push(ingredient.code);
@@ -65,7 +69,7 @@ export class Machine extends Group {
         this.resetReceivers();
         this.assignReceivers();
 
-        this.icecream = icecream;
+        this.product = product;
     }
 
     private resetReceivers() {
@@ -111,28 +115,33 @@ export class Machine extends Group {
             ];
         }
 
-        this.receivers.forEach(receiver => {
-            receiver.onReceive.add((receiver: Receiver, ingredient: Ingredient, correct: boolean) => {
-                if (correct) {
-                    receiver.setIngredient(null);
-                    this.assignReceivers();
-                }
-
-                this.receiveIngredient(ingredient, correct);
-            });
-        });
+        this.receivers.forEach(receiver =>
+            receiver.onReceive.add((_, ingredient: Ingredient, correct: boolean) => this.receiveIngredient(ingredient, correct))
+        );
     }
 
     private receiveIngredient(ingredient: Ingredient, correct: boolean) {
-        this.icecream.addIngredient(ingredient);
+        if (!correct) {
+            this.product.failed();
+            this.ejectProduct();
+            this.resetReceivers();
+            return;
+        }
 
         // was this the last ingredient?
         if (!this.receivers.filter(r => r.isAssigned()).length) {
-            this.icecream.reset(this.scanner.x + this.icecream.width + 2, 670);
-            this.onProductFinished.dispatch(this, this.icecream);
-            this.icecream.isScanned = false;
-            this.icecream.body.moveRight(100);
+            this.ejectProduct();
         }
+        this.assignReceivers();
+        this.product.addIngredient(ingredient);
+
+    }
+
+    private ejectProduct() {
+        this.product.reset(this.scanner.centerX + this.product.width, this.game.world.height - 190);
+        this.product.isScanned = false;
+        this.product.body.moveRight(100);
+        this.onProductFinished.dispatch(this, this.product);
     }
 }
 
@@ -144,16 +153,23 @@ export enum IceCreamType {
 export class IceCream extends PhysicsP2Sprite implements fruttifrisco.IProduct {
     public ingredients: fruttifrisco.IproductIngredient[];
     public isScanned = false;
+    public isFailed = false;
     constructor(game: Phaser.Game, x: number, y: number, frame = 5) {
         super(game, x, y, Assets.Spritesheets.SpritesheetsIcecreams1572066.getName(), frame, 0.5, 0.5);
         this.name = IceCreamType[this.getRandomTaste()];
         this.body.setZeroRotation();
+        this.body.setZeroDamping();
         this.body.data.gravityScale = 0;
         this.body.data.shapes[0].sensor = true;
     }
 
     private getRandomTaste(): IceCreamType {
         return Math.floor(Math.random() * Object.keys(IceCreamType).length / 2);
+    }
+
+    public failed() {
+        this.isFailed = true;
+        this.frame = 4;
     }
 
     public addIngredient(ingredient: Ingredient) {
@@ -194,7 +210,12 @@ export class Receiver extends Phaser.Group {
 
     public receive(ingredient: Ingredient) {
         this.funnel.animations.play('receive');
-        this.onReceive.dispatch(this, ingredient, this.ingredientCode === ingredient.code);
+
+        const correct = this.ingredientCode === ingredient.code;
+        if (correct)
+            this.setIngredient(null);
+
+        this.onReceive.dispatch(this, ingredient, correct);
     }
 
     public setIngredient(name?: fruttifrisco.IngredientName) {
