@@ -5,6 +5,7 @@ import { Physics } from 'phaser-ce';
 import { fruttifrisco } from '../interfaces';
 
 export default class Title extends Phaser.State {
+    private backgrounds: Phaser.Group;
     private icecreams: Phaser.Group;
     private monsters: Phaser.Group;
     private machines: Phaser.Group;
@@ -49,12 +50,21 @@ export default class Title extends Phaser.State {
 
         //  This part is vital if you want the objects with their own collision groups to still collide with the world bounds
         //  (which we do) - what this does is adjust the bounds to use its own collision group.
-        // this.game.physics.p2.updateBoundsCollisionGroup();
+        this.game.physics.p2.updateBoundsCollisionGroup();
 
         // DO NOT ADD ANYTHING TO THE GAME BEFORE THIS LINE
         // ELSE IT WILL BE HIDDEN BEHIND THE BACKGROUND IMAGE
-        const background = this.game.add.image(this.game.world.centerX, this.game.world.centerY, Assets.Images.ImagesProductionBgInclPlatforms.getName());
-        background.anchor.setTo(0.5);
+        // const background = this.game.add.image(this.game.world.centerX, this.game.world.centerY, Assets.Images.ImagesProductionBgInclPlatforms.getName());
+        // background.anchor.setTo(0.5);
+        this.game.stage.backgroundColor = '#808080';
+
+        this.backgrounds = this.game.add.group();
+
+        const headerbg = this.backgrounds.add(new Phaser.TileSprite(this.game, 0, 0, this.game.world.width, 223, Assets.Images.ImagesBgHeader.getName()));
+
+        const ground = new platforms.Ground(this.game, this.game.world.height - 272);
+        ground.body.setCollisionGroup(this.platformCollisionGroup);
+        ground.body.collides([this.monsterCollisionGroup]);
 
         this.icecreams = this.game.add.physicsGroup();
         this.icecreams.physicsBodyType = Phaser.Physics.P2JS;
@@ -62,28 +72,25 @@ export default class Title extends Phaser.State {
         this.monsters.physicsBodyType = Phaser.Physics.P2JS;
         this.machines = this.game.add.group();
 
-        this.spraycan = this.game.add.existing(new Spraycan(this.game, 480, 20));
+        this.spraycan = this.game.add.existing(new Spraycan(this.game, this.game.world.centerX - 90, 20));
         this.spraycan.events.onInputDown.add(this.grabSpraycan, this);
 
-        const ground = new platforms.Ground(this.game, 820);
-        ground.body.setCollisionGroup(this.platformCollisionGroup);
-        ground.body.collides([this.monsterCollisionGroup]);
-
         this.createMachines();
-        this.startDropMonsters();
-        this.startMakeIcecream();
         this.createStorage();
+
+        this.startMakeIcecream();
+        this.startDropMonsters();
     }
 
     private createMachines() {
-        const sourceMachine: Machine = this.machines.add(new Machine(this.game, 57, 543, MachineSize.large, [fruttifrisco.IngredientName.Egg, fruttifrisco.IngredientName.Milk, fruttifrisco.IngredientName.Suggar]));
+        const sourceMachine: Machine = this.machines.add(new Machine(this.game, 150, this.game.world.height - 400, MachineSize.large, [fruttifrisco.IngredientName.Egg, fruttifrisco.IngredientName.Milk, fruttifrisco.IngredientName.Suggar], this.backgrounds));
         sourceMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
         sourceMachine.platform.body.collides([this.monsterCollisionGroup, this.icecreamCollisionGroup]);
         sourceMachine.scanner.body.setCollisionGroup(this.platformCollisionGroup);
         sourceMachine.scanner.body.collides(this.icecreamCollisionGroup);
         sourceMachine.onProductFinished.add(() => this.productFinished());
 
-        const tasteMachine: Machine = this.machines.add(new Machine(this.game, 781, 543, MachineSize.small, [fruttifrisco.IngredientName.Chocolate, fruttifrisco.IngredientName.Vanilla, fruttifrisco.IngredientName.Strawberry]));
+        const tasteMachine: Machine = this.machines.add(new Machine(this.game, this.game.world.width - 450, this.game.world.height - 400, MachineSize.small, [fruttifrisco.IngredientName.Chocolate, fruttifrisco.IngredientName.Vanilla, fruttifrisco.IngredientName.Strawberry], this.backgrounds));
         tasteMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
         tasteMachine.platform.body.collides(this.monsterCollisionGroup);
         tasteMachine.scanner.body.setCollisionGroup(this.platformCollisionGroup);
@@ -91,13 +98,18 @@ export default class Title extends Phaser.State {
     }
 
     private createStorage() {
+        // add two storage boxes on background
+        const storage1 = this.backgrounds.add(new Phaser.Sprite(this.game, this.game.world.centerX - 600, 0, Assets.Images.ImagesStorage.getName()));
+        const storage2 = this.backgrounds.add(new Phaser.Sprite(this.game, this.game.world.width - 270, 0, Assets.Images.ImagesStorage.getName()));
+        storage2.scale.x *= -1;
+
         const ingredients = [
-            new Egg(this.game, 20, 10),
-            new Milk(this.game, 120, 10),
-            new Suggar(this.game, 250, 10),
-            new Strawberry(this.game, 600, 10),
-            new Chocolate(this.game, 710, 10),
-            new Vanilla(this.game, 840, 10)
+            new Egg(this.game, storage1.centerX - 200, 10),
+            new Milk(this.game, storage1.centerX - 95, 10),
+            new Suggar(this.game, storage1.centerX + 28, 10),
+            new Strawberry(this.game, storage2.centerX - 200, 10),
+            new Chocolate(this.game, storage2.centerX - 95, 10),
+            new Vanilla(this.game, storage2.centerX + 28, 10)
         ];
 
         ingredients.forEach(ingredient => {
@@ -137,7 +149,7 @@ export default class Title extends Phaser.State {
     }
 
     private makeIceCream() {
-        const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, 670));
+        const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, this.game.world.height - 290));
         icecream.ingredients = this.getIngredientsForProduct(icecream.name);
         icecream.body.moveRight(100);
         icecream.body.setCollisionGroup(this.icecreamCollisionGroup);
@@ -162,6 +174,8 @@ export default class Title extends Phaser.State {
     }
 
     private iceCreamHit(bodyA: Physics.P2.Body, bodyB: any, shapeA, shapeB, equation) {
+        if (!bodyA)
+            return;
         if (bodyA.sprite instanceof Monster)
             (<IceCream>shapeA.body.parent.sprite).frame = 4;
         else if (bodyA.sprite.parent instanceof Machine)
@@ -217,7 +231,7 @@ export default class Title extends Phaser.State {
                 this.spraycan.frame = 0;
 
             if (this.game.input.activePointer.rightButton.isDown) {
-                this.spraycan.reset(480, 20);
+                this.spraycan.reset(this.game.world.centerX - 80, 20);
                 this.monsters.setAllChildren('input.enabled', false);
                 this.spraycanActive = false;
             }

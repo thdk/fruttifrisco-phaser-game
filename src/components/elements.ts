@@ -22,17 +22,16 @@ export class Machine extends Group {
 
     public onProductFinished: Phaser.Signal;
 
-    constructor(game: Phaser.Game, x: number, y: number, size: MachineSize, ingredients: fruttifrisco.IngredientName[], name?: string, addToStage?: boolean, enableBody?: boolean, physicsBodyType?: number) {
+    constructor(game: Phaser.Game, x: number, y: number, size: MachineSize, ingredients: fruttifrisco.IngredientName[], backgroundGroup: Phaser.Group, name?: string, addToStage?: boolean, enableBody?: boolean, physicsBodyType?: number) {
         super(game, null, name, true, enableBody, physicsBodyType);
         this.inputIngredients = ingredients;
         this.onProductFinished = new Phaser.Signal();
 
-        this.createPlatform(size, x, y);
+        this.createPlatform(size, x, y, backgroundGroup);
         if (!this.platform)
             return;
 
         this.scanner = this.add(new PhysicsP2Sprite(game, this.platform.centerX, y + this.platform.height / 2, null, null, 1, new Phaser.Point(0.5, 1)));
-        this.scanner.body.setRectangle(1, 1);
         this.scanner.body.static = true;
         this.scanner.body.data.shapes[0].sensor = true;
 
@@ -82,12 +81,16 @@ export class Machine extends Group {
         });
     }
 
-    private createPlatform(size: MachineSize, x: number, y: number): void {
+    private createPlatform(size: MachineSize, x: number, y: number, backgroundGroup: Phaser.Group): void {
         switch (size) {
             case (MachineSize.small):
+                // set background image
+                backgroundGroup.add(new Phaser.Sprite(this.game, x - 23, y - 23, Assets.Images.ImagesTastemachine.getName()));
                 this.platform = new platforms.TasteMachinePlatform(this.game, x, y);
                 break;
             case (MachineSize.large):
+                // set background image
+                backgroundGroup.add(new Phaser.Sprite(this.game, x, y - 23, Assets.Images.ImagesSourcemachine.getName()));
                 this.platform = new platforms.SourceMachinePlatform(this.game, x, y);
                 break;
             default:

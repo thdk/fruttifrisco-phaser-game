@@ -11,10 +11,20 @@ export namespace Images {
 
         static getPNG(): string { return require('assets/images/bg-cones.png'); }
     }
+    export class ImagesBgFloor {
+        static getName(): string { return 'bg-floor'; }
+
+        static getPNG(): string { return require('assets/images/bg-floor.png'); }
+    }
     export class ImagesBgGame {
         static getName(): string { return 'bg-game'; }
 
         static getPNG(): string { return require('assets/images/bg-game.png'); }
+    }
+    export class ImagesBgHeader {
+        static getName(): string { return 'bg-header'; }
+
+        static getPNG(): string { return require('assets/images/bg-header.png'); }
     }
     export class ImagesConveybelt {
         static getName(): string { return 'conveybelt'; }
@@ -35,6 +45,11 @@ export namespace Images {
         static getName(): string { return 'sourcemachine'; }
 
         static getPNG(): string { return require('assets/images/sourcemachine.png'); }
+    }
+    export class ImagesStorage {
+        static getName(): string { return 'storage'; }
+
+        static getPNG(): string { return require('assets/images/storage.png'); }
     }
     export class ImagesTastemachineFront {
         static getName(): string { return 'tastemachine-front'; }

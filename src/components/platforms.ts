@@ -12,7 +12,8 @@ export class Platform extends PhysicsP2Sprite {
 export class Ground extends Platform {
     constructor(game: Phaser.Game, y: number, key?: string) {
         super(game, 0, y, key, 1);
-        this.body.setRectangle(game.width, 200, game.width / 2);
+        game.add.tileSprite(0, y, game.width, 69, Assets.Images.ImagesBgFloor.getName());
+        const shape = this.body.setRectangle(game.width, 69, game.width / 2, 60);
     }
 }
 
