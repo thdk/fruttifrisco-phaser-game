@@ -1,4 +1,4 @@
-import { Physics } from 'phaser-ce';
+import { Physics, Point } from 'phaser-ce';
 
 export class SimpleSprite extends Phaser.Sprite {
     constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number, scale?: number | Phaser.Point, anchor?: number | Phaser.Point) {
@@ -12,7 +12,7 @@ export class SimpleSprite extends Phaser.Sprite {
         if (typeof (anchor) === 'number')
             this.anchor.setTo(anchor);
         else if (anchor)
-            this.anchor = <Phaser.Point>anchor;
+            this.anchor = new Point(anchor.x, anchor.y);
     }
 }
 
@@ -47,10 +47,14 @@ export class PhysicsP2Sprite extends PhysicsSprite {
 
         this.game.physics.p2.enable(this);
 
-        if (typeof (anchor) === 'number')
+        if (typeof (anchor) === 'number') {
             this.anchor.setTo(anchor);
-        else if (anchor)
-            this.anchor = <Phaser.Point>anchor;
+            this.body.shapeChanged();
+        }
+        else if (anchor) {
+            this.anchor.setTo(anchor.x, anchor.y);
+            this.body.shapeChanged();
+        }
         this.body.debug = false;
     }
 }

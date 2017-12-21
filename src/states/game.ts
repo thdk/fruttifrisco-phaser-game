@@ -1,6 +1,6 @@
 import * as Assets from '../assets';
 import * as platforms from '../components/platforms';
-import { Monster, Spraycan, Machine, Receiver, MachineSize, IceCream, IceCreamType, Vanilla, Chocolate, Strawberry, Egg, Milk, Suggar, Ingredient } from '../components/elements';
+import { Monster, Spraycan, Spraycloud, Machine, Receiver, MachineSize, IceCream, IceCreamType, Vanilla, Chocolate, Strawberry, Egg, Milk, Suggar, Ingredient } from '../components/elements';
 import { Physics } from 'phaser-ce';
 import { fruttifrisco } from '../interfaces';
 
@@ -9,12 +9,12 @@ export default class Title extends Phaser.State {
     private icecreams: Phaser.Group;
     private monsters: Phaser.Group;
     private machines: Phaser.Group;
-    private spraycanActive = false;
-    private spraycan: Phaser.Sprite;
+    private spraycan: Spraycan;
 
     private platformCollisionGroup: Phaser.Physics.P2.CollisionGroup;
     private monsterCollisionGroup: Phaser.Physics.P2.CollisionGroup;
     private icecreamCollisionGroup: Phaser.Physics.P2.CollisionGroup;
+    private cloudCollisionGroup: Phaser.Physics.P2.CollisionGroup;
 
     private productList: fruttifrisco.IProduct[];
     private icecreamTimer: Phaser.TimerEvent;
@@ -60,6 +60,7 @@ export default class Title extends Phaser.State {
         this.platformCollisionGroup = this.game.physics.p2.createCollisionGroup();
         this.monsterCollisionGroup = this.game.physics.p2.createCollisionGroup();
         this.icecreamCollisionGroup = this.game.physics.p2.createCollisionGroup();
+        this.cloudCollisionGroup = this.game.physics.p2.createCollisionGroup();
 
         this.game.stage.backgroundColor = '#808080';
 
@@ -78,9 +79,7 @@ export default class Title extends Phaser.State {
         ground.body.setCollisionGroup(this.platformCollisionGroup);
         ground.body.collides(this.monsterCollisionGroup);
 
-        this.spraycan = this.game.add.existing(new Spraycan(this.game, this.game.world.centerX - 90, 20));
-        this.spraycan.events.onInputDown.add(this.grabSpraycan, this);
-
+        this.createSpraycan();
         this.createScoreBoard();
 
         this.createMachines();
@@ -93,6 +92,20 @@ export default class Title extends Phaser.State {
         this.producedProducts = new Array();
         this.startMakeIcecream();
         this.startDropMonsters();
+    }
+
+    private createSpraycan() {
+        this.spraycan = this.game.add.existing(new Spraycan(this.game, this.game.world.centerX - 90, 20, this.cloudCollisionGroup));
+        this.spraycan.onActivate.add((active: boolean) => {
+            // enable click on each monster inside the monster group
+            this.monsters.children.forEach((m: Monster) => m.input.enabled = active);
+        });
+
+        this.spraycan.onSpray.add(cloud => {
+            cloud.body.onBeginContact.add((bodyA: Physics.P2.Body, bodyB: any, shapeA, shapeB, equation) => this.cloudHit(bodyA, bodyB, shapeA, shapeB, equation));
+            cloud.body.setCollisionGroup(this.cloudCollisionGroup);
+            cloud.body.collides(this.monsterCollisionGroup);
+        });
     }
 
     private createScoreBoard() {
@@ -187,7 +200,7 @@ export default class Title extends Phaser.State {
     }
 
     private makeIceCream() {
-        const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, this.game.world.height - 170));
+        const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, this.game.world.height - 175));
         icecream.ingredients = this.getIngredientsForProduct(icecream.name);
         icecream.body.moveRight(100);
         icecream.body.setCollisionGroup(this.icecreamCollisionGroup);
@@ -202,16 +215,22 @@ export default class Title extends Phaser.State {
         this.monsterTimer = this.game.time.events.loop(5000, this.dropMonster, this);
     }
 
-    private grabSpraycan() {
-        this.monsters.children.forEach((m: Monster) => m.input.enabled = true);
-        this.spraycanActive = true;
-    }
-
     private dropMonster() {
         const monster = this.monsters.add(new Monster(this.game));
         monster.body.setCollisionGroup(this.monsterCollisionGroup);
-        monster.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup, this.icecreamCollisionGroup], this.monsterDropped, this);
-        monster.input.enabled = this.spraycanActive;
+        monster.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup, this.icecreamCollisionGroup, this.cloudCollisionGroup], this.monsterDropped, this);
+        monster.inputEnabled = true;
+        monster.input.enabled = this.spraycan.isActive;
+        monster.input.priorityID = 2;
+        monster.events.onInputDown.add(m => m.kill());
+    }
+
+    private cloudHit(bodyA: Physics.P2.Body, bodyB: any, shapeA, shapeB, equation) {
+        if (!bodyA)
+        return;
+
+        const monster = (<Monster>bodyA.sprite);
+        monster.kill();
     }
 
     private iceCreamHit(bodyA: Physics.P2.Body, bodyB: any, shapeA, shapeB, equation) {
@@ -248,10 +267,6 @@ export default class Title extends Phaser.State {
         }
     }
 
-    private killSprayCloud(cloud: Phaser.Sprite) {
-        cloud.kill();
-    }
-
     private lostLive() {
         this.lives--;
         this.liveCount.text = this.lives.toString();
@@ -266,36 +281,5 @@ export default class Title extends Phaser.State {
         this.icecreams.destroy();
         this.icecreamTimer.timer.destroy();
         this.monsterTimer.timer.destroy();
-    }
-
-    public update() {
-        if (this.spraycanActive) {
-            this.game.canvas.style.cursor = 'none';
-            this.spraycan.x = this.game.input.mousePointer.x - Assets.Spritesheets.SpritesheetsSpraycan12227512.getFrameWidth() / 4;
-            this.spraycan.y = this.game.input.mousePointer.y - 20;
-
-            if (this.game.input.activePointer.leftButton.isDown) {
-                // use offset of half frame width to set cursor at middle of frame
-                // WARNING: spraycan is scaled at 0.5 so framewidth must be scaled first too (0.5*0.5 = 0.25)
-
-                this.spraycan.frame = 1;
-                const sprayCloud = this.game.add.sprite(this.spraycan.x + 10, this.spraycan.y - 120, Assets.Spritesheets.SpritesheetsSpraycloud1831356.getName());
-                const sprayAnimation = sprayCloud.animations.add('clouds', null, 9, false);
-                sprayAnimation.play();
-
-                const signal = new Phaser.Signal();
-                signal.addOnce(() => this.killSprayCloud(sprayCloud));
-
-                sprayAnimation.onComplete = signal;
-            }
-            else
-                this.spraycan.frame = 0;
-
-            if (this.game.input.activePointer.rightButton.isDown) {
-                this.spraycan.reset(this.game.world.centerX - 80, 20);
-                this.monsters.setAllChildren('input.enabled', false);
-                this.spraycanActive = false;
-            }
-        }
     }
 }

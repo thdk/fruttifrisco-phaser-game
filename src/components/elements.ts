@@ -46,6 +46,11 @@ export class Machine extends Group {
     }
 
     public scanProduct(product: IceCream) {
+        if (this.product) {
+            this.product.failed();
+            this.ejectProduct();
+        }
+
         // avoid multiple asynchronous collide callbacks
         if (product.isScanned)
             return;
@@ -127,18 +132,20 @@ export class Machine extends Group {
             this.resetReceivers();
             return;
         }
+        else {
+            this.product.addIngredient(ingredient);
+        }
 
         // was this the last ingredient?
         if (!this.receivers.filter(r => r.isAssigned()).length) {
             this.ejectProduct();
         }
         this.assignReceivers();
-        this.product.addIngredient(ingredient);
 
     }
 
     private ejectProduct() {
-        this.product.reset(this.scanner.centerX + this.product.width, this.game.world.height - 190);
+        this.product.reset(this.scanner.centerX + this.product.width, this.game.world.height - 175);
         this.product.isScanned = false;
         this.product.body.moveRight(100);
         this.onProductFinished.dispatch(this, this.product);
@@ -261,21 +268,109 @@ export class Monster extends Rain {
         this.body.setZeroForce();
         this.body.fixedRotation = true;
         const circle = this.body.setCircle(30).material = new Phaser.Physics.P2.Material('monsterMaterial');
-
-        this.inputEnabled = true;
-        this.input.priorityID = 2;
-        this.events.onInputDown.add(this.kill, this);
     }
 }
 
 export class Spraycan extends SimpleSprite {
-    constructor(game: Phaser.Game, x: number, y: number, key?: string, frame?: string | number) {
+    public isActive: boolean;
+    public onActivate: Phaser.Signal;
+    public onSpray: Phaser.Signal;
+    private cloudCollisionGroup: Phaser.Physics.P2.CollisionGroup;
+    constructor(game: Phaser.Game, x: number, y: number, cloudCollisionGroup: Phaser.Physics.P2.CollisionGroup, key?: string, frame?: string | number) {
         super(game, x, y, Assets.Spritesheets.SpritesheetsSpraycan12227512.getName(), frame);
         this.anchor.setTo(0);
         this.scale.setTo(0.5);
         this.inputEnabled = true;
         this.animations.add('spray', [2], 1, false);
         this.input.useHandCursor = true;
+
+        this.onActivate = new Phaser.Signal();
+        this.onSpray = new Phaser.Signal();
+
+        this.events.onInputDown.add(() => this.activate(true));
+
+        this.cloudCollisionGroup = cloudCollisionGroup;
+    }
+
+    public update() {
+        if (this.isActive) {
+            this.game.canvas.style.cursor = 'none';
+            this.x = this.game.input.mousePointer.x - Assets.Spritesheets.SpritesheetsSpraycan12227512.getFrameWidth() / 4;
+            this.y = this.game.input.mousePointer.y - 20;
+
+            if (this.game.input.activePointer.leftButton.isDown) {
+                this.frame = 1;
+                const sprayCloud = this.game.add.existing(new Spraycloud(this.game, this.x + 30, this.y, this.cloudCollisionGroup));
+                this.onSpray.dispatch(sprayCloud);
+            }
+            else
+                this.frame = 0;
+
+            if (this.game.input.activePointer.rightButton.isDown) {
+                this.reset(this.game.world.centerX - 80, 20);
+                this.activate(false);
+            }
+        }
+    }
+
+    private activate(active: boolean) {
+        this.isActive = active;
+        this.onActivate.dispatch(this.isActive);
+    }
+}
+
+export class Spraycloud extends PhysicsP2Sprite {
+    private animation: Phaser.Animation;
+    private collisionGroup: Phaser.Physics.P2.CollisionGroup;
+    constructor(game: Phaser.Game, x: number, y: number, collisionGroup: Phaser.Physics.P2.CollisionGroup, key?: string, frame?: string | number) {
+        super(game, x, y, Assets.Spritesheets.SpritesheetsSpraycloud1831356.getName(), frame, 1, new Phaser.Point(0, 1));
+        this.body.clearShapes();
+        this.body.static = true;
+        this.animation = this.animations.add('clouds', null, 9, false);
+        this.animation.play();
+
+        this.collisionGroup = collisionGroup;
+
+        this.animation.onComplete.add((sprite, animation) => {
+            this.destroy();
+        });
+    }
+
+    public update() {
+        // create a circle
+        this.body.clearShapes();
+        // clear all previous shapes
+        // player.body.addShape(circleShape)
+        // you can also add the circle at [10,15] from the center of the body
+        switch (this.frame) {
+            case 0:
+                this.body.addCircle(20, 22, -17);
+                break;
+            case 1:
+                this.body.addCircle(40, 80, -48);
+                break;
+            case 2:
+                this.body.addCircle(60, 120, -80);
+                break;
+            case 3:
+                this.body.addCircle(20, 80, -87);
+                this.body.addCircle(20, 160, -100);
+                this.body.addCircle(20, 124, -40);
+                break;
+            case 4:
+                this.body.addCircle(20, 123, -75);
+                break;
+            case 5:
+                this.body.addCircle(20, 123, -75);
+                break;
+            default:
+                break;
+        }
+
+        if (this.body.data.shapes)
+            this.body.data.shapes.map(s => s.sensor = true);
+
+        this.body.setCollisionGroup(this.collisionGroup);
     }
 }
 
