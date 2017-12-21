@@ -142,6 +142,7 @@ export class Machine extends Group {
         this.product.isScanned = false;
         this.product.body.moveRight(100);
         this.onProductFinished.dispatch(this, this.product);
+        this.product = null;
     }
 }
 
@@ -154,6 +155,7 @@ export class IceCream extends PhysicsP2Sprite implements fruttifrisco.IProduct {
     public ingredients: fruttifrisco.IproductIngredient[];
     public isScanned = false;
     public isFailed = false;
+    public onFailed: Phaser.Signal;
     constructor(game: Phaser.Game, x: number, y: number, frame = 5) {
         super(game, x, y, Assets.Spritesheets.SpritesheetsIcecreams1572066.getName(), frame, 0.5, 0.5);
         this.name = IceCreamType[this.getRandomTaste()];
@@ -161,6 +163,7 @@ export class IceCream extends PhysicsP2Sprite implements fruttifrisco.IProduct {
         this.body.setZeroDamping();
         this.body.data.gravityScale = 0;
         this.body.data.shapes[0].sensor = true;
+        this.onFailed = new Phaser.Signal();
     }
 
     private getRandomTaste(): IceCreamType {
@@ -170,6 +173,7 @@ export class IceCream extends PhysicsP2Sprite implements fruttifrisco.IProduct {
     public failed() {
         this.isFailed = true;
         this.frame = 4;
+        this.onFailed.dispatch(this);
     }
 
     public addIngredient(ingredient: Ingredient) {
@@ -197,7 +201,7 @@ export class IceCream extends PhysicsP2Sprite implements fruttifrisco.IProduct {
 export class Receiver extends Phaser.Group {
     public onReceive: Phaser.Signal;
     private ingredientCode?: fruttifrisco.IngredientName;
-    protected funnel: SimpleSprite;
+    public funnel: SimpleSprite;
     public display: SimpleSprite;
     constructor(game: Phaser.Game, x: number, y: number, frame?: string | number) {
         super(game);

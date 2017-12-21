@@ -144,12 +144,12 @@ export namespace Spritesheets {
         static getMargin(): number { return 0; }
         static getSpacing(): number { return 0; }
     }
-    export class SpritesheetsSpraycloud4583386 {
-        static getName(): string { return 'spraycloud.[458,338,6,0,0]'; }
+    export class SpritesheetsSpraycloud1831356 {
+        static getName(): string { return 'spraycloud.[183,135,6,0,0]'; }
 
-        static getPNG(): string { return require('assets/spritesheets/spraycloud.[458,338,6,0,0].png'); }
-        static getFrameWidth(): number { return 458; }
-        static getFrameHeight(): number { return 338; }
+        static getPNG(): string { return require('assets/spritesheets/spraycloud.[183,135,6,0,0].png'); }
+        static getFrameWidth(): number { return 183; }
+        static getFrameHeight(): number { return 135; }
         static getFrameMax(): number { return 6; }
         static getMargin(): number { return 0; }
         static getSpacing(): number { return 0; }

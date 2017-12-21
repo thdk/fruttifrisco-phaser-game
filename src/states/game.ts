@@ -15,7 +15,6 @@ export default class Title extends Phaser.State {
     private platformCollisionGroup: Phaser.Physics.P2.CollisionGroup;
     private monsterCollisionGroup: Phaser.Physics.P2.CollisionGroup;
     private icecreamCollisionGroup: Phaser.Physics.P2.CollisionGroup;
-    private scannerCollisionGroup: Phaser.Physics.P2.CollisionGroup;
 
     private productList: fruttifrisco.IProduct[];
     private icecreamTimer: Phaser.TimerEvent;
@@ -35,46 +34,70 @@ export default class Title extends Phaser.State {
     public create(): void {
         this.timer = this.game.time.events;
 
+        // create a dummy reference ingredient list for each product
+        // TODO: replace the data below with data from XML / JSON file
         this.productList = new Array();
         const vanilleIngredients: fruttifrisco.IproductIngredient[] = [{ code: fruttifrisco.IngredientName.Egg, quantity: 2 }, { code: fruttifrisco.IngredientName.Milk, quantity: 1 }, { code: fruttifrisco.IngredientName.Suggar, quantity: 1 }, { code: fruttifrisco.IngredientName.Vanilla, quantity: 1 }];
         this.productList.push({ name: 'Vanilla', ingredients: vanilleIngredients });
         const chocolateIngredients: fruttifrisco.IproductIngredient[] = [{ code: fruttifrisco.IngredientName.Egg, quantity: 3 }, { code: fruttifrisco.IngredientName.Milk, quantity: 1 }, { code: fruttifrisco.IngredientName.Suggar, quantity: 1 }, { code: fruttifrisco.IngredientName.Chocolate, quantity: 1 }];
         this.productList.push({ name: 'Chocolate', ingredients: chocolateIngredients });
-        const strawberryIngredients: fruttifrisco.IproductIngredient[] = [{ code: fruttifrisco.IngredientName.Egg, quantity: 4 }, { code: fruttifrisco.IngredientName.Milk, quantity: 1 }, { code: fruttifrisco.IngredientName.Suggar, quantity: 1 }, { code: fruttifrisco.IngredientName.Strawberry, quantity: 1 }];
+        const strawberryIngredients: fruttifrisco.IproductIngredient[] = [{ code: fruttifrisco.IngredientName.Egg, quantity: 1 }, { code: fruttifrisco.IngredientName.Milk, quantity: 1 }, { code: fruttifrisco.IngredientName.Suggar, quantity: 1 }, { code: fruttifrisco.IngredientName.Strawberry, quantity: 1 }];
         this.productList.push({ name: 'Strawberry', ingredients: strawberryIngredients });
 
         this.game.physics.startSystem(Phaser.Physics.P2JS);
-        this.game.physics.p2.setImpactEvents(true);
-        this.game.physics.p2.gravity.y = 1000;
-        //  Turn on impact events for the world, without this we get no collision callbacks
-        // this.game.physics.p2.setImpactEvents(true);
 
-        this.game.physics.p2.restitution = 0.5;
+        this.game.physics.p2.gravity.y = 1000;
+        this.game.physics.p2.restitution = 0.3;
         this.game.physics.p2.friction = 0;
+
+        //  Turn on impact events for the world, without this we get no collision callbacks
+        this.game.physics.p2.setImpactEvents(true);
+
+        //  allow objects with their own collision groups to still collide with the world bounds
+        this.game.physics.p2.updateBoundsCollisionGroup();
 
         //  Create our collision groups.
         this.platformCollisionGroup = this.game.physics.p2.createCollisionGroup();
         this.monsterCollisionGroup = this.game.physics.p2.createCollisionGroup();
         this.icecreamCollisionGroup = this.game.physics.p2.createCollisionGroup();
-        this.scannerCollisionGroup = this.game.physics.p2.createCollisionGroup();
 
-        //  This part is vital if you want the objects with their own collision groups to still collide with the world bounds
-        //  (which we do) - what this does is adjust the bounds to use its own collision group.
-        this.game.physics.p2.updateBoundsCollisionGroup();
-
-        // DO NOT ADD ANYTHING TO THE GAME BEFORE THIS LINE
-        // ELSE IT WILL BE HIDDEN BEHIND THE BACKGROUND IMAGE
-        // const background = this.game.add.image(this.game.world.centerX, this.game.world.centerY, Assets.Images.ImagesProductionBgInclPlatforms.getName());
-        // background.anchor.setTo(0.5);
         this.game.stage.backgroundColor = '#808080';
 
+        // create groups to represent the layers of the game
         this.backgrounds = this.game.add.group();
+        this.score = this.game.add.group();
+        this.icecreams = this.game.add.physicsGroup();
+        this.monsters = this.game.add.physicsGroup();
+        this.machines = this.game.add.group();
 
         const headerbg = this.backgrounds.add(new Phaser.TileSprite(this.game, 0, 0, this.game.world.width, 223, Assets.Images.ImagesBgHeader.getName()));
+        const beltbg = this.backgrounds.add(new Phaser.TileSprite(this.game, 0, this.game.world.height - 155, this.game.width, 69, Assets.Images.ImagesBgFloor.getName()));
 
+        // add a (invisible) bound at the bottom of the world
+        const ground = this.backgrounds.add(new platforms.Ground(this.game, this.game.world.height - 180));
+        ground.body.setCollisionGroup(this.platformCollisionGroup);
+        ground.body.collides(this.monsterCollisionGroup);
+
+        this.spraycan = this.game.add.existing(new Spraycan(this.game, this.game.world.centerX - 90, 20));
+        this.spraycan.events.onInputDown.add(this.grabSpraycan, this);
+
+        this.createScoreBoard();
+
+        this.createMachines();
+        this.createStorage();
+
+        this.startGame();
+    }
+
+    private startGame() {
+        this.producedProducts = new Array();
+        this.startMakeIcecream();
+        this.startDropMonsters();
+    }
+
+    private createScoreBoard() {
         this.liveCount = this.game.add.existing(new Phaser.Text(this.game, 20, 0, this.lives.toString(), { fontSize: 60, fill: '#F00' }));
 
-        this.score = this.game.add.group();
         this.scoreVanilla = this.score.add(new Phaser.Text(this.game, this.game.world.width - 115, 240, '0 x', { fontSize: 30, fill: '#000' }));
         const vanilla = this.score.add(new Phaser.Sprite(this.game, this.game.world.width - 60, 223, Assets.Spritesheets.SpritesheetsIcecreamsFinished1562583.getName(), 0));
         vanilla.scale.setTo(0.3);
@@ -86,41 +109,18 @@ export default class Title extends Phaser.State {
         this.scoreChocolate = this.score.add(new Phaser.Text(this.game, this.game.world.width - 115, 440, '0 x', { fontSize: 30, fill: '#000' }));
         const chocolate = this.score.add(new Phaser.Sprite(this.game, this.game.world.width - 60, 423, Assets.Spritesheets.SpritesheetsIcecreamsFinished1562583.getName(), 2));
         chocolate.scale.setTo(0.3);
-
-        const ground = new platforms.Ground(this.game, this.game.world.height - 172);
-        ground.body.setCollisionGroup(this.platformCollisionGroup);
-        ground.body.collides([this.monsterCollisionGroup]);
-
-        this.icecreams = this.game.add.physicsGroup();
-        this.icecreams.physicsBodyType = Phaser.Physics.P2JS;
-        this.monsters = this.game.add.physicsGroup();
-        this.monsters.physicsBodyType = Phaser.Physics.P2JS;
-        this.machines = this.game.add.group();
-
-        this.spraycan = this.game.add.existing(new Spraycan(this.game, this.game.world.centerX - 90, 20));
-        this.spraycan.events.onInputDown.add(this.grabSpraycan, this);
-
-        this.createMachines();
-        this.createStorage();
-
-        this.startMakeIcecream();
-        this.startDropMonsters();
-
-        this.producedProducts = new Array();
     }
 
     private createMachines() {
-        const sourceMachine: Machine = this.machines.add(new Machine(this.game, 150, this.game.world.height - 300, MachineSize.large, [fruttifrisco.IngredientName.Egg, fruttifrisco.IngredientName.Milk, fruttifrisco.IngredientName.Suggar], this.backgrounds));
-        sourceMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
-        sourceMachine.platform.body.collides([this.monsterCollisionGroup, this.icecreamCollisionGroup]);
-        sourceMachine.scanner.body.setCollisionGroup(this.platformCollisionGroup);
-        sourceMachine.scanner.body.collides(this.icecreamCollisionGroup);
-
-        const tasteMachine: Machine = this.machines.add(new Machine(this.game, this.game.world.width - 450, this.game.world.height - 300, MachineSize.small, [fruttifrisco.IngredientName.Chocolate, fruttifrisco.IngredientName.Vanilla, fruttifrisco.IngredientName.Strawberry], this.backgrounds));
-        tasteMachine.platform.body.setCollisionGroup(this.platformCollisionGroup);
-        tasteMachine.platform.body.collides(this.monsterCollisionGroup);
-        tasteMachine.scanner.body.setCollisionGroup(this.platformCollisionGroup);
-        tasteMachine.scanner.body.collides(this.icecreamCollisionGroup);
+        [
+            this.machines.add(new Machine(this.game, 150, this.game.world.height - 300, MachineSize.large, [fruttifrisco.IngredientName.Egg, fruttifrisco.IngredientName.Milk, fruttifrisco.IngredientName.Suggar], this.backgrounds)),
+            this.machines.add(new Machine(this.game, this.game.world.width - 450, this.game.world.height - 300, MachineSize.small, [fruttifrisco.IngredientName.Chocolate, fruttifrisco.IngredientName.Vanilla, fruttifrisco.IngredientName.Strawberry], this.backgrounds))
+        ].map(m => {
+            m.platform.body.setCollisionGroup(this.platformCollisionGroup);
+            m.platform.body.collides(this.monsterCollisionGroup);
+            m.scanner.body.setCollisionGroup(this.platformCollisionGroup);
+            m.scanner.body.collides(this.icecreamCollisionGroup);
+        });
     }
 
     private createStorage() {
@@ -154,7 +154,7 @@ export default class Title extends Phaser.State {
         // check if ingredient is dropped on a receiver
         this.machines.children.forEach((m: Machine) => {
             m.receivers.forEach((receiver: Receiver) => {
-                if (receiver.getBounds().contains(pointer.position.x, pointer.position.y)) {
+                if (receiver.funnel.getBounds().contains(pointer.position.x, pointer.position.y)) {
                     receiver.receive(ingredient);
                 }
             });
@@ -187,13 +187,14 @@ export default class Title extends Phaser.State {
     }
 
     private makeIceCream() {
-        const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, this.game.world.height - 190));
+        const icecream: IceCream = this.icecreams.add(new IceCream(this.game, 0, this.game.world.height - 170));
         icecream.ingredients = this.getIngredientsForProduct(icecream.name);
         icecream.body.moveRight(100);
         icecream.body.setCollisionGroup(this.icecreamCollisionGroup);
-        icecream.body.onBeginContact.add((bodyA: Physics.P2.Body, bodyB: any, shapeA, shapeB, equation) => this.iceCreamHit(bodyA, bodyB, shapeA, shapeB, equation));
         icecream.checkWorldBounds = true;
+        icecream.body.onBeginContact.add((bodyA: Physics.P2.Body, bodyB: any, shapeA, shapeB, equation) => this.iceCreamHit(bodyA, bodyB, shapeA, shapeB, equation));
         icecream.events.onOutOfBounds.add((ice) => this.icecreamCreated(ice));
+        icecream.onFailed.add((ice) => this.lostLive());
         icecream.body.collides([this.platformCollisionGroup, this.monsterCollisionGroup]);
     }
 
@@ -222,10 +223,6 @@ export default class Title extends Phaser.State {
                 return;
 
             ice.failed();
-            this.lives--;
-            this.liveCount.text = this.lives.toString();
-            if (this.lives === 0)
-                this.gameOver();
         }
         else if (bodyA.sprite.parent instanceof Machine)
             (<Machine>bodyA.sprite.parent).scanProduct(<IceCream>shapeA.body.parent.sprite);
@@ -255,6 +252,13 @@ export default class Title extends Phaser.State {
         cloud.kill();
     }
 
+    private lostLive() {
+        this.lives--;
+        this.liveCount.text = this.lives.toString();
+        if (this.lives === 0)
+            this.gameOver();
+    }
+
     private gameOver() {
         const text = this.game.add.text(this.game.world.centerX, this.game.world.centerY, 'GAME OVER', { fontSize: 60, fill: '#000' });
         text.anchor.setTo(0.5);
@@ -275,8 +279,7 @@ export default class Title extends Phaser.State {
                 // WARNING: spraycan is scaled at 0.5 so framewidth must be scaled first too (0.5*0.5 = 0.25)
 
                 this.spraycan.frame = 1;
-                const sprayCloud = this.game.add.sprite(this.spraycan.x + 10, this.spraycan.y - 120, Assets.Spritesheets.SpritesheetsSpraycloud4583386.getName());
-                sprayCloud.scale.setTo(0.4);
+                const sprayCloud = this.game.add.sprite(this.spraycan.x + 10, this.spraycan.y - 120, Assets.Spritesheets.SpritesheetsSpraycloud1831356.getName());
                 const sprayAnimation = sprayCloud.animations.add('clouds', null, 9, false);
                 sprayAnimation.play();
 
