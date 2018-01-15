@@ -1,39 +1,18 @@
-# Phaser NPM Webpack TypeScript Starter Project (catchy name, isn't it?)
+# Frutti Frisco - Phaser game built using the Phaser NPM Webpack TypeScript Starter Project
 [![Dependencies](https://david-dm.org/rroylance/phaser-npm-webpack-typescript-starter-project.png?theme=shields.io)](https://david-dm.org/rroylance/phaser-npm-webpack-typescript-starter-project)
 [![devDependency Status](https://david-dm.org/rroylance/phaser-npm-webpack-typescript-starter-project/dev-status.svg)](https://david-dm.org/rroylance/phaser-npm-webpack-typescript-starter-project#info=devDependencies)
 
-![PhaserNPMWebpackTypeScriptStarterProject](https://raw.githubusercontent.com/rroylance/phaser-npm-webpack-typescript-starter-project/master/README_HEADER.png)
+![PhaserNPMWebpackTypeScriptStarterProject](https://raw.githubusercontent.com/thdk/fruttifrisco-phaser-game/master/readme_screenshot.png)
 
-##### Hit the ground running and make some great games!
 
-###### If you use this template/starter project in any capacity; I'd love to hear about your experience with it. Whether you continued with it or decided not to (I really want to hear why you made your decision).
+##### See starter-project for instruction on how to build and setup your dev environment
+https://github.com/rroylance/phaser-npm-webpack-typescript-starter-project
 
 # Features:
 
 - Phaser-CE 2.9.1 (npm module, no having to download the library separately...)
 - TypeScript + TSLint
-- 3 States (Boot, Preloader, Title) showing transition between states and where some things should be done and how a TypeScript state looks
-- Google Web Font loader
 - Webpack
-- Separate Development and Distribution builds
-- Live server (builds and reloads the browser on changes)
-- No hassle asset management requiring no code, on your part, to load and parse assets
-  - Assets are required and hashed via webpack, you can now guarantee that when you push an update, everyone will get the new files and not cached ones
-  - Assets class created automatically allowing you to access all the assets and their frames and sprites (in the case of Atlases and Audiosprites) in a compiler validating way!
-- Setting up the game size and scaling through a script that does it all for you
-  - Automatic template background
-  - Sets up the size the game so that it is scaled only when absolutely necessary
-  - Refer to src/utils/utils.ts for an explanation on the background_template and the sizing/scaling style
-
-### TODO:
-
-- Clean up generateAssetsClass.js
-- Get Custom/Local Web Fonts hashed by Webpack (to avoid cache issues)
-  - If anyone has experience webpacking font-face in css style web fonts and loading said fonts via webfontloader, let me know as I was having some trouble getting the font-face src to use the hashed assets.
-- Multiple resolution asset loader (@2x, @3x, etc...)
-- Yeoman Generator
-- Optional Analytics integration
-- Optional Cordova integration for iOS and Android builds
 
 ### Folder Structure:
 - **assets/** – This is where your assets that are processed when building goes
