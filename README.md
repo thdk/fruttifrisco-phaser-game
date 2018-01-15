@@ -8,6 +8,14 @@
 ##### See starter-project for instruction on how to build and setup your dev environment
 https://github.com/rroylance/phaser-npm-webpack-typescript-starter-project
 
+##### play the game here:
+http://thdk.be/ff/ 
+
+How to play: Drag and drop the correct ingredients in the dedicated funnel of each machine.
+Kill monsters using the spray can. Click on the spraycan to enable, right click anywhere to stop using spraycan.
+
+Monsters should not get in contact with icecreams!
+
 # Features:
 
 - Phaser-CE 2.9.1 (npm module, no having to download the library separately...)
